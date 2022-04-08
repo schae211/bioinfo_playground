@@ -3,7 +3,20 @@ output_dir: docs
 navbar:
   title: "Bioinfo Playground"
   left:
-    - text: "Home"
-      href: index.html
-    - text: "About"
-      href: about.html
+  - text:  "Home"
+    href: index.html
+  - text: "Content"
+    menu:
+    - text: "Iterative LSI"
+      href: iterative_lsi.html
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    code_folding: hide
+    theme: cosmo
+    highlight: textmate
+    df_print: paged
+
+

@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Philipp SL Schäfer" />
+
+
+<title>Iterative LSI</title>
+
+<script src="site_libs/header-attrs-2.13/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Bioinfo Playground</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Content
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="iterative_lsi.html">Iterative LSI</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Iterative LSI</h1>
+<h4 class="author">Philipp SL Schäfer</h4>
+<h4 class="date">2022-04-08-11-12</h4>
+
+</div>
+
+
+<pre class="r"><code>knitr::opts_chunk$set(echo = TRUE)
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(grid)
+  library(ComplexHeatmap)
+  library(gridExtra)
+})</code></pre>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<ul>
+<li><p>The goal is to understand iterative lexical semantic indexing (LSI) which is used as dimensional reduction technique in ArchR.</p></li>
+<li><p>Input:</p>
+<ul>
+<li><p>In the common workflow ArchR uses the tile matrix as input. Each tile corresponds to a 500 bp stretch on the genome. The tile matrix has as many rows as tiles and as many columns as cells, so an entry corresponds to the whether a Tn5 insertion was present in the corresponding tile and cell. “Was present” refers to the fact that this matrix is binary as described below!</p></li>
+<li><p>However, it is possbile to use any other matrix as input for LSI in ArchR. For example of one has multiome data, one can add the RNA expression matrix to the ArchR project and use it as input for iterative LSI.</p></li>
+</ul></li>
+<li><p>Why does ArchR use iterative LSI instead of PCA?</p>
+<ul>
+<li><p>For processing of single-cell RNA-seq data we usually use PCA on the top X variable genes (usually with <span class="math inline">\(x \in [2000, 3000]\)</span>)</p></li>
+<li><p>However, in case of the sparse single-cell ATAC data it is inherently difficult to determine highly variable tiles. Therefore we use the top X accessible tiles in the first round with <span class="math inline">\(x \in [25000, 30000]\)</span>. So we use many more features and PCA does not scale so well to so many dimensions, because we require centered data, and which is not required for truncated SVD.</p></li>
+<li><p>However, the more important reason for using LSI over PCA is that we have binary data with mostly 0s. These zeros do not carry as much information as the 1s, since a 0 could mean either not sampled or not-accessible. But if we were to use PCA, we would assume that cells which have a zero at the same position are similar, in fact these zeros will drive what we call similar, although they do not really carry information. Now LSI allows us to rather focus on the positions with 1s (why?).</p></li>
+</ul></li>
+<li><p>What is Lexical Semantic Indexing (LSI)?</p>
+<ul>
+<li>LSI was developed for natural language processing (NLP). (TODO)</li>
+</ul></li>
+<li><p>Iterative LSI Approach:</p>
+<ul>
+<li><p>Iterative means that ArchR performs several rounds of LSI. In the first round the top x accessible tiles, where <span class="math inline">\(x\)</span> is per default <span class="math inline">\(25000\)</span>.</p></li>
+<li><p>Since the iterative part is easy to explain, I will focus on explaining LSI below using a mixed terminology between snATAC and NLP.</p></li>
+</ul></li>
+</ul>
+</div>
+<div id="data" class="section level1">
+<h1>Data</h1>
+<p>To explain LSI we will create a mock tile matrix with 5 rows/tiles and 5 columns/cells. In the terminology of natural language processing the tiles corresponds to the terms with <span class="math inline">\(i = 1, ..., N\)</span> and the cells correspond to the documents with <span class="math inline">\(j = 1, ..., D\)</span>. Thus our tile matrix <span class="math inline">\(T\)</span> has dimensions <span class="math inline">\(T \in \mathbb{R}^{N \times D}\)</span> (here: <span class="math inline">\(T \in \mathbb{R}^{5 \times 5}\)</span>).</p>
+<p>Here we will try to see how we can make a binary mock example.</p>
+<pre class="r"><code>simple &lt;- tibble::tribble(
+  ~cell_A, ~cell_B, ~cell_C, ~cell_D, ~cell_E,
+  1, 0, 1, 0, 0,
+  0, 1, 0, 1, 0,
+  0, 1, 0, 1, 0,
+  1, 0, 1, 1, 1,
+  1, 0, 1, 0, 1,
+  1, 0, 0, 0, 1,
+  0, 1, 0, 1, 1
+) %&gt;%
+  mutate(rownames = paste0(&quot;tile_&quot;, 1:nrow(.))) %&gt;%
+  column_to_rownames(var = &quot;rownames&quot;) %&gt;%
+  as.matrix()
+
+ComplexHeatmap::pheatmap(
+   simple, 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(0, max(simple)), c(&quot;yellow&quot;, &quot;darkorange&quot;), transparency = 0.5),
+   column_title = &quot;Tile Matrix&quot;,
+   heatmap_legend_param = list(title = &quot;Count&quot;)
+   )</code></pre>
+<p><img src="iterative_lsi_files/figure-html/unnamed-chunk-1-1.png" width="576" /></p>
+<pre class="r"><code>print(paste0(&quot;Rank of the Tile Matrix: &quot;, Matrix::rankMatrix(simple)[1]))</code></pre>
+<pre><code>## [1] &quot;Rank of the Tile Matrix: 5&quot;</code></pre>
+<p>We already see that cells A and C are similar on the one hand, whereas cells B and D are similar on the other hand. Cell E is somewhere in between.</p>
+</div>
+<div id="method" class="section level1">
+<h1>Method</h1>
+<p>First we will perform some kind of normalization known as TF-IDF of the Tile Matrix.</p>
+<div id="compute-tf" class="section level2">
+<h2>Compute TF</h2>
+<p>The first step is to compute the term frequency (TF) matrix.</p>
+<p>Therefore we simply get the fraction</p>
+<p>So assuming we look at term/tile <span class="math inline">\(i\)</span> in document/cell <span class="math inline">\(j\)</span>, the corresponding term frequency <span class="math inline">\(tf_{ij}\)</span> would be:</p>
+<p><span class="math display">\[
+tf_{ij} = \frac{c_{ij}}{\sum_{i&#39;=1}^Nc_{i&#39;j}}
+\]</span></p>
+<p>with <span class="math inline">\(c_{ij}\)</span> is the count of term/tile <span class="math inline">\(i\)</span> in document/cell <span class="math inline">\(j\)</span>.</p>
+<pre class="r"><code>tf_simple &lt;- t(t(simple) / colSums(simple))</code></pre>
+<pre class="r"><code>ComplexHeatmap::pheatmap(
+   tf_simple, 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(0, max(tf_simple)), c(&quot;yellow&quot;, &quot;darkorange&quot;), transparency = 0.5),
+   column_title = &quot;Term Frequency Matrix&quot;,
+   number_format = &quot;%.2f&quot;,
+   heatmap_legend_param = list(title = &quot;TF&quot;)
+   )</code></pre>
+<p><img src="iterative_lsi_files/figure-html/unnamed-chunk-4-1.png" width="576" /></p>
+</div>
+<div id="compute-tf-idf" class="section level2">
+<h2>Compute TF-IDF</h2>
+<p>Next we will compute the Term Frequency - Inverse Document Frequency (TF-IDF) matrix. The IDF for a term/tile <span class="math inline">\(IDF_i\)</span> is defined as:</p>
+<p><span class="math display">\[
+IDF_i = \log \frac{N}{1 + DF_i}
+\]</span></p>
+<p>with <span class="math inline">\(DF_i\)</span> being the document count of term/tile <span class="math inline">\(i\)</span>, i.e. the number of documents/cells in which the term/tile is present.</p>
+<p>So first we compute the document frequencies and then the inverse document frequencies.</p>
+<pre class="r"><code>dfs &lt;- rowSums(tf_simple &gt; 0)
+idfs &lt;- ncol(tf_simple)/(dfs+1)</code></pre>
+<pre class="r"><code>p1 &lt;- ComplexHeatmap::pheatmap(
+   as.matrix(dfs), 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(0, max(dfs)), c(&quot;yellow&quot;, &quot;darkorange&quot;), transparency = 0.5),
+   column_title = &quot;Document Count&quot;,
+   number_format = &quot;%.2f&quot;,
+   heatmap_legend_param = list(title = &quot;DF&quot;), 
+   run_draw = FALSE
+   )
+
+p2 &lt;- ComplexHeatmap::pheatmap(
+   as.matrix(idfs), 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(0, max(idfs)), c(&quot;yellow&quot;, &quot;darkorange&quot;), transparency = 0.5),
+   column_title = &quot;Inverse Document Frequency&quot;,
+   number_format = &quot;%.2f&quot;,
+   heatmap_legend_param = list(title = &quot;IDF&quot;), 
+   run_draw = FALSE
+   )
+
+ht_list &lt;- p1 + p2</code></pre>
+<pre><code>## Warning: Heatmap/annotation names are duplicated:</code></pre>
+<pre class="r"><code>draw(ht_list, ht_gap = unit(1, &quot;cm&quot;), show_heatmap_legend = FALSE)</code></pre>
+<p><img src="iterative_lsi_files/figure-html/unnamed-chunk-6-1.png" width="768" /></p>
+<p>And we basically see that the terms/tile that occur in the fewest documents get the largest weight here. Term/Tile 2 is only present in 2 documents/cells and thus gets the largest value here.</p>
+<p>So lastly we need to compute the TF-IDF which is defined for term/tile <span class="math inline">\(i\)</span> in document/cell <span class="math inline">\(j\)</span> as:</p>
+<p><span class="math display">\[
+TF-IDF_i = \log (TF_{ij} + 1) \times IDF_i
+\]</span></p>
+<pre class="r"><code>tfidf_simple &lt;- log(tf_simple + 1) * idfs</code></pre>
+<pre class="r"><code>p1 &lt;- ComplexHeatmap::pheatmap(
+   simple, 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(0, 5), c(&quot;yellow&quot;, &quot;darkorange&quot;), transparency = 0.5),
+   column_title = &quot;Input: Tile Matrix&quot;,
+   heatmap_legend_param = list(title = &quot;Count&quot;), 
+   run_draw = FALSE
+   )
+
+p2 &lt;- ComplexHeatmap::pheatmap(
+   tfidf_simple, 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(0, max(tfidf_simple)), c(&quot;yellow&quot;, &quot;darkorange&quot;), transparency = 0.5),
+   column_title = &quot;Output: TF-IDF Matrix&quot;,
+   number_format = &quot;%.2f&quot;,
+   heatmap_legend_param = list(title = &quot;TF-IDF&quot;), 
+   run_draw = FALSE
+   )
+
+ht_list &lt;- p1 + p2</code></pre>
+<pre><code>## Warning: Heatmap/annotation names are duplicated:</code></pre>
+<pre class="r"><code>draw(ht_list, ht_gap = unit(2, &quot;cm&quot;))</code></pre>
+<p><img src="iterative_lsi_files/figure-html/unnamed-chunk-8-1.png" width="1344" /></p>
+<p>Now we do see the effect of the TF-IDF normalization. For example in cell B, tile 2 had 2 insertions, whereas tile 3 had 3 insertions. Now in the TF-IDF matrix, the value for tile 2 is higher than for tile 3 in cell B, since tile 2 got a high weight.</p>
+</div>
+<div id="truncated-svd" class="section level2">
+<h2>Truncated SVD</h2>
+<p>The foundation of LSI is the truncated SVD of the TF or the TF-IDF matrix. The singular value decomposition exists for any real matrix <span class="math inline">\(A \in \mathbb{R}^{N \times D}\)</span>:</p>
+<p><span class="math display">\[
+A = U \Sigma V^T
+\]</span></p>
+<p>with the orthogonal matrix <span class="math inline">\(V \in \mathbb{R}^{D \times D}\)</span> which contains the right singular vectors <span class="math inline">\(v_i\)</span> which form a basis of the domain of <span class="math inline">\(A\)</span>, the orthogonal matrix <span class="math inline">\(U \in \mathbb{R}^{N \times N}\)</span> which contains the left singular vectors <span class="math inline">\(v_i\)</span> which form a basis of the codomain of <span class="math inline">\(A\)</span>, and the “diagonal matrix” (zero padding) <span class="math inline">\(\Sigma \in \mathbb{R}^{N \times D}\)</span> which contains the singular values <span class="math inline">\(\sigma_i\)</span>.</p>
+<p>Given the matrix <span class="math inline">\(A\)</span> has rank <span class="math inline">\(r\)</span> we could equivalently write <span class="math inline">\(A\)</span> as a sum of outer products.</p>
+<p><span class="math display">\[
+A = \sum_{i=1}^r u_i \sigma_i v_i^T
+\]</span></p>
+<details>
+<summary>
+Click for Figure describing Domain and Codomain
+</summary>
+<p>A matrix <span class="math inline">\(A\)</span> described a linear mapping <span class="math inline">\(f: X \rightarrow Y\)</span> from the domain <span class="math inline">\(X\)</span> (red) to the codomain <span class="math inline">\(Y\)</span> (blue). The yellow circle visualizes the image/colspace of <span class="math inline">\(A\)</span>, i.e. <span class="math inline">\(Im(A) = \{y \in Y | \exists x \in X: f(x)=y\}\)</span> (all “points” in <span class="math inline">\(Y\)</span> that can be reached from <span class="math inline">\(X\)</span> via <span class="math inline">\(A\)</span>).</p>
+<p><img src="img/1920px-Codomain2.SVG.png" width="40%" style="display: block; margin: auto;" /></p>
+<hr />
+</details>
+<p>Now we can approximate the matrix <span class="math inline">\(A\)</span> with rank <span class="math inline">\(r\)</span> by a matrix <span class="math inline">\(B\)</span> of rank <span class="math inline">\(k\)</span>. It turns out that the rank <span class="math inline">\(k\)</span> matrix which minimizes the error <span class="math inline">\(\| A - B\|\)</span> with some matrix norm (e.g. Spectral norm <span class="math inline">\(\|.\|_2\)</span> or Frobenius norm <span class="math inline">\(\|.\|_F\)</span>) is the sum of the outer products of the first <span class="math inline">\(k\)</span> singular vectors and values <span class="math inline">\(A_k\)</span>:</p>
+<p><span class="math display">\[
+A_k = \sum_{i=1}^k u_i \sigma_i v_i^T \\
+A_k = \arg \max_B \| A - B\| \quad s.t. \quad rk(B) = k
+\]</span></p>
+<p>See for proof the Eckart–Young Theorem.</p>
+<p>Let’s compute the SVD to visualize the above. First we will look at the SVD components:</p>
+<pre class="r"><code>svd_object &lt;- svd(tfidf_simple, nu=nrow(tfidf_simple), nv=ncol(tfidf_simple))
+U &lt;- svd_object$u
+Vt &lt;- t(svd_object$v)
+S &lt;- rbind(diag(svd_object$d), matrix(0, 
+                                      nrow = nrow(tfidf_simple) - length(svd_object$d),
+                                      ncol = ncol(tfidf_simple)))</code></pre>
+<pre class="r"><code>p1 &lt;- ComplexHeatmap::pheatmap(
+   U, 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(min(U), max(U)), c(&quot;yellow&quot;, &quot;darkorange&quot;), 
+                        transparency = 0.5),
+   column_title = &quot;U: Left Singular Vectors&quot;,
+   heatmap_legend_param = list(title = &quot;&quot;), 
+   run_draw = FALSE
+   )
+
+p2 &lt;- ComplexHeatmap::pheatmap(
+   S, 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(min(S), max(S)), c(&quot;yellow&quot;, &quot;darkorange&quot;),
+                        transparency = 0.5),
+   column_title = &quot;S: Singular Values&quot;,
+   number_format = &quot;%.2f&quot;,
+   heatmap_legend_param = list(title = &quot;&quot;), 
+   run_draw = FALSE
+   )
+
+p3 &lt;- ComplexHeatmap::pheatmap(
+   Vt, 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(min(Vt), max(Vt)), c(&quot;yellow&quot;, &quot;darkorange&quot;),
+                        transparency = 0.5),
+   column_title = &quot;Vt: Right Singular Vectors&quot;,
+   number_format = &quot;%.2f&quot;,
+   heatmap_legend_param = list(title = &quot;&quot;), 
+   run_draw = FALSE
+   )
+
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(nr = 1, nc = 3)))
+pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 1))
+draw(p1, newpage = FALSE)
+upViewport()
+
+pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 2))
+draw(p2, newpage = FALSE)
+upViewport()
+
+pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 3))
+draw(p3, newpage = FALSE)
+upViewport()</code></pre>
+<p><img src="iterative_lsi_files/figure-html/unnamed-chunk-11-1.png" width="1344" /></p>
+<p>Now we will compare the TF-IDF matrix to the full SVD reconstruction (which are the same and both have rank <span class="math inline">\(k = 5\)</span>) to the matrix approximation <span class="math inline">\(A_k\)</span> with rank <span class="math inline">\(k=2\)</span>. We see that the low-rank approximation is pretty close to the full-rank matrix, meaning there is a lot of redundant information in the matrix.</p>
+<pre class="r"><code># check whether output makes sense
+full_reconstruction = U %*% S %*% Vt
+rownames(full_reconstruction) &lt;- rownames(tfidf_simple)
+colnames(full_reconstruction) &lt;- colnames(tfidf_simple)
+
+rk &lt;- 2
+# check whether output makes sense
+rk_approximation = U[,1:rk] %*% S[1:rk, 1:rk] %*% Vt[1:rk,]
+rownames(rk_approximation) &lt;- rownames(tfidf_simple)
+colnames(rk_approximation) &lt;- colnames(tfidf_simple)</code></pre>
+<pre class="r"><code>p1 &lt;- ComplexHeatmap::pheatmap(
+   tfidf_simple, 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(min(tfidf_simple), max(tfidf_simple)), 
+                        c(&quot;yellow&quot;, &quot;darkorange&quot;), transparency = 0.5),
+   column_title = &quot;TF-IDF Matrix&quot;,
+   number_format = &quot;%.2f&quot;,
+   heatmap_legend_param = list(title = &quot;TF-IDF&quot;), 
+   run_draw = FALSE
+   )
+
+p2 &lt;- ComplexHeatmap::pheatmap(
+   full_reconstruction, 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(min(full_reconstruction), max(full_reconstruction)), 
+                        c(&quot;yellow&quot;, &quot;darkorange&quot;), transparency = 0.5),
+   column_title = &quot;Full Reconstructed TF-IDF Matrix&quot;,
+   heatmap_legend_param = list(title = &quot;TF-IDF&quot;), 
+   run_draw = FALSE
+   )
+
+p3 &lt;- ComplexHeatmap::pheatmap(
+   rk_approximation, 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(min(rk_approximation), max(rk_approximation)), 
+                        c(&quot;yellow&quot;, &quot;darkorange&quot;), transparency = 0.5),
+   column_title = &quot;Rank 2 Reconstructed TF-IDF Matrix&quot;,
+   heatmap_legend_param = list(title = &quot;TF-IDF&quot;), 
+   run_draw = FALSE
+   )
+
+ht_list &lt;- p1 + p2 + p3</code></pre>
+<pre><code>## Warning: Heatmap/annotation names are duplicated:</code></pre>
+<pre><code>## Warning: Heatmap/annotation names are duplicated: ,</code></pre>
+<pre class="r"><code>draw(ht_list, ht_gap = unit(2, &quot;cm&quot;), show_heatmap_legend = FALSE)</code></pre>
+<p><img src="iterative_lsi_files/figure-html/unnamed-chunk-13-1.png" width="1536" /></p>
+<p>As said above the right singular vectors <span class="math inline">\(v_i\)</span> form a basis for the domain of the TF-IDF matrix. Now instead of using all right singular vectors, we can simply use the first <span class="math inline">\(2\)</span> right singular vectors which form the basis for a 2-dimensional subspace in the domain of the TF-IDF matrix.</p>
+<p>Now this 2-dimensional subspace is our dimensional-reduced feature space and each document/cell <span class="math inline">\(j\)</span> can be described by 2 coordinates.</p>
+<pre class="r"><code>k &lt;- 2
+new_basis &lt;- Vt[1:k,]
+rownames(new_basis) &lt;- paste0(&quot;v&quot;, 1:k)
+colnames(new_basis) &lt;- colnames(tfidf_simple)</code></pre>
+<pre class="r"><code>p1 &lt;- ComplexHeatmap::pheatmap(
+   simple, 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(0, 5), c(&quot;yellow&quot;, &quot;darkorange&quot;), transparency = 0.5),
+   column_title = &quot;Input: Tile Matrix&quot;,
+   heatmap_legend_param = list(title = &quot;Count&quot;), 
+   run_draw = FALSE
+   )
+
+p2 &lt;- ComplexHeatmap::pheatmap(
+   tfidf_simple, 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(min(tfidf_simple), max(full_reconstruction)), 
+                        c(&quot;yellow&quot;, &quot;darkorange&quot;), transparency = 0.5),
+   column_title = &quot;Intermediate: TF-IDF Matrix&quot;,
+   heatmap_legend_param = list(title = &quot;TF-IDF&quot;), 
+   run_draw = FALSE
+   )
+
+p3 &lt;- ComplexHeatmap::pheatmap(
+   new_basis, 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(min(new_basis), max(new_basis)), 
+                        c(&quot;yellow&quot;, &quot;darkorange&quot;), transparency = 0.5),
+   column_title = &quot;Output: Cell Embedding (right singular vectors)&quot;,
+   heatmap_legend_param = list(title = &quot;&quot;), 
+   run_draw = FALSE
+   )
+
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(nr = 1, nc = 3)))
+pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 1))
+draw(p1, newpage = FALSE)
+upViewport()
+
+pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 2))
+draw(p2, newpage = FALSE)
+upViewport()
+
+pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 3))
+draw(p3, newpage = FALSE)
+upViewport()</code></pre>
+<p><img src="iterative_lsi_files/figure-html/unnamed-chunk-15-1.png" width="1536" /></p>
+<p>We can easily see that the new lower dimensional space retained the most important information: Cells A and C are still very similar to each other and very different from cells B and D (which are similar to each other).</p>
+</div>
+<div id="details" class="section level2">
+<h2>Details</h2>
+<ul>
+<li>Now here we compute the full SVD and only used the first 2 singular vectors, but in reality we do not have to compute the full SVD, but we can rather directly approximate the truncated SVD.</li>
+</ul>
+</div>
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
