@@ -1,4 +1,10 @@
 ---
-title: "Hello World"
+title: "Hello World!"
 ---
+
+Coming from biochemistry and diving into bioinformatics, I find it takes quite a long time to understand methods that are used in the single-cell biology field. To better understand methods, I try to build them from scratch or play around with them, the results of which I collect here.
+
+This being said, I cannot guarantee that the things I write are correct. I am always happy if others point out that I understood something incorrectly.
+
+In terms of topics, I have worked with single-cell RNA-seq, single-cell ATAC-seq, and various spatial omics data so far. Therefore, I will focus here on methods that are applicable to these domains.
 
