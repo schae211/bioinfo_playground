@@ -1,0 +1,9 @@
+name: bioinfo_playground
+output_dir: docs
+navbar:
+  title: "Bioinfo Playground"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "About"
+      href: about.html
