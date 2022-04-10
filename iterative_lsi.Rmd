@@ -19,6 +19,10 @@ suppressPackageStartupMessages({
 })
 ```
 
+# Status
+
+Work in progress.
+
 # Introduction
 
 * The goal is to understand iterative lexical semantic indexing (LSI) which is used as dimensional reduction technique in ArchR. 

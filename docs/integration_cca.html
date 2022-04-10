@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Philipp SL Schäfer" />
+
+
+<title>Integration via CCA</title>
+
+<script src="site_libs/header-attrs-2.13/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+<style type="text/css">
+/* for pandoc --citeproc since 2.11 */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Bioinfo Playground</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Content
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="iterative_lsi.html">Iterative LSI</a>
+    </li>
+    <li>
+      <a href="integration_cca.html">Integration via CCA</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Integration via CCA</h1>
+<h4 class="author">Philipp SL Schäfer</h4>
+<h4 class="date">2022-04-10-08-57</h4>
+
+</div>
+
+
+<pre class="r"><code>suppressPackageStartupMessages({
+   library(tidyverse)
+   library(ComplexHeatmap)
+   library(grid)
+   library(gridExtra)
+   library(CCA)
+   library(GGally)
+})
+Sys.setenv(RETICULATE_PYTHON =
+             &quot;/home/pschaefer/miniconda3/envs/r-reticulate/bin/python&quot;)</code></pre>
+<div id="status" class="section level1">
+<h1>Status</h1>
+<p>Work in progress.</p>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<ul>
+<li><p>To understand the integration of single-cells via canonical correlation analysis (CCA), we will first focus on applications that are more intuitive to understand</p></li>
+<li><p>Then, we will have a look at how to solve the CCA objective</p></li>
+<li><p>Lastly, we will explore how CCA can be used to integrate single cell data.</p></li>
+</ul>
+</div>
+<div id="resources" class="section level1">
+<h1>Resources</h1>
+<ul>
+<li><p>Lecture: Data Mining, Spring 2013, by Ryan Tibshirani, lectures 10 - 13 (see here: <a href="https://www.stat.cmu.edu/~ryantibs/datamining/" class="uri">https://www.stat.cmu.edu/~ryantibs/datamining/</a>)</p></li>
+<li><p>PhD Thesis: Practical Algorithms for Latent Variable Models by Gregory W. Gundersen (<a href="http://gregorygundersen.com/publications/gundersen2021thesis.pdf" class="uri">http://gregorygundersen.com/publications/gundersen2021thesis.pdf</a>)</p></li>
+<li><p>Applied CCA in R: <a href="https://stats.oarc.ucla.edu/r/dae/canonical-correlation-analysis/" class="uri">https://stats.oarc.ucla.edu/r/dae/canonical-correlation-analysis/</a></p></li>
+<li><p>Paper: A penalized matrix decomposition, with applications to sparse principal components and canonical correlation analysis <span class="citation">(<a href="#ref-10.1093/biostatistics/kxp008" role="doc-biblioref"><em>1</em></a>)</span></p></li>
+<li><p>Paper: Comprehensive Integration of Single-Cell Data (Seurat V3) <span class="citation">(<a href="#ref-10.1038/nbt.4096" role="doc-biblioref"><em>2</em></a>, <a href="#ref-10.1016/j.cell.2019.05.031" role="doc-biblioref"><em>3</em></a>)</span></p></li>
+</ul>
+</div>
+<div id="background-intuition" class="section level1">
+<h1>Background &amp; Intuition</h1>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>We will download the questions that were used for the development of the Multidimensional Introversion-Extraversion Scales (see here: <a href="https://openpsychometrics.org/_rawdata" class="uri">https://openpsychometrics.org/_rawdata</a>).</p>
+<p>The test contained 91 questions about the personality of the participants. We remove Q44 which is doubled.</p>
+<pre class="r"><code>if (!any(str_detect(list.dirs(&quot;/mnt/sda/data&quot;, recursive = FALSE), 
+           &quot;MIES_Dev_Data$&quot;))) {
+  downloader::download(
+  url=&quot;https://openpsychometrics.org/_rawdata/MIES_Dev_Data.zip&quot;,
+  dest=&quot;/mnt/sda/data/MIES_DATA.zip&quot;, 
+  mode=&quot;wb&quot;)
+  unzip(&quot;/mnt/sda/data/MIES_DATA.zip&quot;, exdir = &quot;/mnt/sda/data/&quot;)
+  unlink(&quot;/mnt/sda/data/MIES_DATA.zip&quot;)
+}
+mies_data &lt;- read_tsv(&quot;/mnt/sda/data/MIES_Dev_Data/data.csv&quot;, 
+                      show_col_types = FALSE) %&gt;%
+   dplyr::select(tidyselect::matches(&quot;Q[0-9]{1,2}A&quot;))
+dim(mies_data)</code></pre>
+<pre><code>## [1] 7188   91</code></pre>
+<pre class="r"><code>q_raw &lt;- read_lines(&quot;/mnt/sda/data/MIES_Dev_Data/codebook.txt&quot;) %&gt;%
+   `[`(., 10:100)
+questions &lt;- tibble::tibble(
+   q = paste0(str_extract(q_raw, &quot;Q[0-9]{1,2}&quot;), &quot;A&quot;),
+   text = str_extract(q_raw, &#39;(?&lt;=: &quot;).+\\.&#39;)
+)
+
+#questions %&gt;%
+#   filter(q %in% c(&quot;Q5A&quot;, &quot;Q44A&quot;))
+
+questions &lt;- questions %&gt;% dplyr::filter(q != &quot;Q44A&quot;)
+q_cleaned &lt;- mies_data[,1:91 != 44]
+
+questions</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["q"],"name":[1],"type":["chr"],"align":["left"]},{"label":["text"],"name":[2],"type":["chr"],"align":["left"]}],"data":[{"1":"Q1A","2":"I would never audition to be on a game show."},{"1":"Q2A","2":"I am not much of a flirt."},{"1":"Q3A","2":"I have to psych myself up before I am brave enough to make a phone call."},{"1":"Q4A","2":"I would hate living with room mates."},{"1":"Q5A","2":"I mostly listen to people in conversations."},{"1":"Q6A","2":"I reveal little about myself."},{"1":"Q7A","2":"I spend hours alone with my hobbies."},{"1":"Q8A","2":"I prefer to eat alone."},{"1":"Q9A","2":"I have trouble finding people I want to be friends with."},{"1":"Q10A","2":"I prefer to socialize 1 on 1, than with a group."},{"1":"Q11A","2":"I sometimes speak so quietly people sometimes have trouble hearing me."},{"1":"Q12A","2":"I do not like to get my picture taken."},{"1":"Q13A","2":"I can keep a conversation going with anyone about anything."},{"1":"Q14A","2":"I want a huge social circle."},{"1":"Q15A","2":"I talk to people when waiting in lines."},{"1":"Q16A","2":"I act wild and crazy."},{"1":"Q17A","2":"I am a bundle of joy."},{"1":"Q18A","2":"I love excitement."},{"1":"Q19A","2":"I&apos;d like to be in a parade."},{"1":"Q20A","2":"I am a flamboyant person."},{"1":"Q21A","2":"I am good at making impromptu speeches."},{"1":"Q22A","2":"I naturally emerge as a leader."},{"1":"Q23A","2":"I am spontaneous."},{"1":"Q24A","2":"I would enjoy being a sports team coach."},{"1":"Q25A","2":"I have a strong personality."},{"1":"Q26A","2":"I am excited by many different activities."},{"1":"Q27A","2":"I spend most of my time in fantasy worlds."},{"1":"Q28A","2":"I often feel lucky."},{"1":"Q29A","2":"I don't make eye contact when I talk with people."},{"1":"Q30A","2":"I have a monotone voice."},{"1":"Q31A","2":"I am a touchy feely person."},{"1":"Q32A","2":"I would like to try bungee jumping."},{"1":"Q33A","2":"I tend to be admired by others."},{"1":"Q34A","2":"I make big physical movements whenever I get excited."},{"1":"Q35A","2":"I am brave."},{"1":"Q36A","2":"I am always in the moment."},{"1":"Q37A","2":"I am involved with my community."},{"1":"Q38A","2":"I am good an entertaining children."},{"1":"Q39A","2":"I like formal occasions."},{"1":"Q40A","2":"I would have to be lost for a very long time before asking help."},{"1":"Q41A","2":"I do not care about sports."},{"1":"Q42A","2":"I prefer individual sports to team sports."},{"1":"Q43A","2":"My parents know nothing about my love life."},{"1":"Q45A","2":"I never leave the door to my room open."},{"1":"Q46A","2":"I make a lot of hand motions when I talk."},{"1":"Q47A","2":"I take lots of pictures of my activities."},{"1":"Q48A","2":"When I was a child, I put on fake concerts and plays with my friends."},{"1":"Q49A","2":"I really like dancing."},{"1":"Q50A","2":"I would have difficulty describing myself to someone."},{"1":"Q51A","2":"My life would not make a good story."},{"1":"Q52A","2":"I am hesitant to give suggestions."},{"1":"Q53A","2":"I tire out quickly."},{"1":"Q54A","2":"I never tell people the important things about myself."},{"1":"Q55A","2":"I avoid going to unknown places."},{"1":"Q56A","2":"Going to the doctor is always awkward for me."},{"1":"Q57A","2":"I have not kept up with my old friends over the years."},{"1":"Q58A","2":"I have not been joyful for quite some time."},{"1":"Q59A","2":"I hate to ask for help."},{"1":"Q60A","2":"If I were to die, I would not want there to be a memorial for me."},{"1":"Q61A","2":"I hate shopping."},{"1":"Q62A","2":"I love to do impressions."},{"1":"Q63A","2":"I would be pleased if asked to speak at a funeral."},{"1":"Q64A","2":"I would never go to a dance club."},{"1":"Q65A","2":"I find it very hard to tell people I find them attractive."},{"1":"Q66A","2":"I hate people."},{"1":"Q67A","2":"I was an outcast in school."},{"1":"Q68A","2":"I would enjoy being a librarian."},{"1":"Q69A","2":"I am usually not single."},{"1":"Q70A","2":"I am able to stand up for myself."},{"1":"Q71A","2":"I would go surfing regularly if I lived on a beach."},{"1":"Q72A","2":"I have wanted to be a stand-up comedian."},{"1":"Q73A","2":"I am a high status person."},{"1":"Q74A","2":"I work out regularly."},{"1":"Q75A","2":"I laugh a lot."},{"1":"Q76A","2":"I like pranks."},{"1":"Q77A","2":"I am happy with my life."},{"1":"Q78A","2":"I am never at a loss for words."},{"1":"Q79A","2":"I feel healthy and vibrant most of the time."},{"1":"Q80A","2":"I love large parties."},{"1":"Q81A","2":"I am quiet around strangers."},{"1":"Q82A","2":"I don&#39;t talk a lot."},{"1":"Q83A","2":"I keep in the background."},{"1":"Q84A","2":"I don&#39;t like to draw attention to myself."},{"1":"Q85A","2":"I have little to say."},{"1":"Q86A","2":"I often feel blue."},{"1":"Q87A","2":"I am not really interested in others."},{"1":"Q88A","2":"I make people feel at ease."},{"1":"Q89A","2":"I don&#39;t mind being the center of attention."},{"1":"Q90A","2":"I start conversations."},{"1":"Q91A","2":"I talk to a lot of different people at parties."}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>For the sake of this tutorial we will randomly split the test into test A with the first 40 questions and test B with the last 50 questions.</p>
+<pre class="r"><code>test_A &lt;- q_cleaned[,1:40]
+test_B &lt;- q_cleaned[,41:90]</code></pre>
+<p>So after all we have two datasets <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>:</p>
+<ul>
+<li><p><span class="math inline">\(X \in \mathbb{R}^{N \times M}\)</span> with persons/observation <span class="math inline">\(g = 1,...N\)</span> (here: <span class="math inline">\(N=7188\)</span>) and questions <span class="math inline">\(Q^A_c\)</span> with <span class="math inline">\(c=1,...,M\)</span></p></li>
+<li><p><span class="math inline">\(Y \in \mathbb{R}^{N \times P}\)</span> with persons/observation <span class="math inline">\(g = 1,...N\)</span> (here: <span class="math inline">\(N=7188\)</span>) and questions <span class="math inline">\(Q^B_d\)</span> with <span class="math inline">\(d=1,...,P\)</span></p></li>
+</ul>
+</div>
+<div id="cca-objective" class="section level2">
+<h2>CCA Objective</h2>
+<p>Our goal is to find linear combinations of the columns of the questions scores from test A and the question scores from test B, such that the resulting vectors of length <span class="math inline">\(N\)</span> are maximally correlated.</p>
+<p>In mathematical terms we seek to find the canonical correlation vectors <span class="math inline">\(\hat{h_X}\)</span> and <span class="math inline">\(\hat{h_Y}\)</span> such that <span class="math inline">\(X \hat{h_X}\)</span> and <span class="math inline">\(Y \hat{h_Y}\)</span> are maximally correlated.</p>
+<p><span class="math display">\[
+\hat{h_X}, \hat{h_Y} = \arg\max_{h_X, h_Y} corr(X h_X, Y h_Y)
+\]</span></p>
+<p>Thus, questions that get a high loading in <span class="math inline">\(\hat{h_X}\)</span> and questions that get a high loading in <span class="math inline">\(\hat{h_Y}\)</span> will be similar, meaning they query similar personality traits.</p>
+<p>We can find <span class="math inline">\(min(M,P)\)</span> pairs of canonical correlation vectors as desribed below in the math section.</p>
+<p><strong>Question:</strong> What is the advantage over performing PCA on the merged matrix <span class="math inline">\([X,Y]\)</span>?</p>
+<ul>
+<li><p>I think the main advantage is that the principal components of the merged matrix <span class="math inline">\([X,Y]\)</span> might be dominated by the features from one datasets.</p></li>
+<li><p>Although I wonder if this is really an issue if I scale the data such that every feature has unit variance.</p></li>
+</ul>
+</div>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<p>We will use the <code>CCA</code> package to perform the CCA analysis here.</p>
+<pre class="r"><code>cca_out &lt;- stats::cancor(test_A, test_B)</code></pre>
+<p>Looking at the distribution of the correlation coefficients.</p>
+<pre class="r"><code>ggplot() +
+   geom_point(aes(x=1:length(cca_out$cor), y=cca_out$cor)) +
+   labs(y = &quot;Correlation Coefficient&quot;, x = &quot;Index&quot;)</code></pre>
+<p><img src="integration_cca_files/figure-html/unnamed-chunk-6-1.png" width="576" /></p>
+<div id="cc-vector" class="section level3">
+<h3>1. CC Vector</h3>
+<p>Checking which questions from A and which questions from B got a high loading in the first canonical correlation vector.</p>
+<pre class="r"><code>qa &lt;- questions %&gt;% 
+   left_join(tibble(q=names(cca_out$xcoef[,1]), xcoef1=cca_out$xcoef[,1],
+                    xcoef2=cca_out$xcoef[,2], xcoef3=cca_out$xcoef[,3]),
+             by=&quot;q&quot;) %&gt;%
+   left_join(tibble(q=names(cca_out$ycoef[,1]), ycoef1=cca_out$ycoef[,1],
+                    ycoef2=cca_out$ycoef[,2], ycoef3=cca_out$ycoef[,3]),
+             by=&quot;q&quot;)
+top_x &lt;- 3</code></pre>
+<p>Top questions from test A:</p>
+<pre class="r"><code>qa %&gt;% slice_max(order_by=xcoef1, n=top_x) %&gt;% pull(text)</code></pre>
+<pre><code>## [1] &quot;I reveal little about myself.&quot;              
+## [2] &quot;I mostly listen to people in conversations.&quot;
+## [3] &quot;I am not much of a flirt.&quot;</code></pre>
+<p>Top questions from test B:</p>
+<pre class="r"><code>qa %&gt;% slice_max(order_by=ycoef1, n=top_x) %&gt;% pull(text)</code></pre>
+<pre><code>## [1] &quot;I don&amp;#39;t talk a lot.&quot;      &quot;I keep in the background.&quot;   
+## [3] &quot;I am quiet around strangers.&quot;</code></pre>
+<p>Also looking at the questions in B with the most negative loading.</p>
+<pre class="r"><code>qa %&gt;% slice_min(order_by=ycoef1, n=top_x) %&gt;% pull(text)</code></pre>
+<pre><code>## [1] &quot;I start conversations.&quot;                         
+## [2] &quot;I talk to a lot of different people at parties.&quot;
+## [3] &quot;I don&amp;#39;t mind being the center of attention.&quot;</code></pre>
+<p>We can also compare the results if we were to perform linear regression for “Q13A” (“I can keep a conversation going with anyone about anything”) using the answers to all questions from test B as predictor.</p>
+<pre class="r"><code>lm_res &lt;- lm(cbind(test_A[,&quot;Q13A&quot;], test_B), formula = Q13A ~ .)</code></pre>
+<p>Again looking at the questions with the most positive coefficient.</p>
+<pre class="r"><code>qa %&gt;%
+   dplyr::filter(q %in% (lm_res$coefficients %&gt;% sort(decreasing=T) %&gt;% `[`(., 1:top_x) %&gt;% names)) %&gt;%
+   dplyr::pull(text)</code></pre>
+<pre><code>## [1] &quot;I am never at a loss for words.&quot; &quot;I make people feel at ease.&quot;    
+## [3] &quot;I start conversations.&quot;</code></pre>
+<p>And at the questions with the most negative coefficient.</p>
+<pre class="r"><code>qa %&gt;%
+   dplyr::filter(q %in% (lm_res$coefficients %&gt;% sort(decreasing=F) %&gt;% `[`(., 1:top_x) %&gt;% names)) %&gt;%
+   dplyr::pull(text)</code></pre>
+<pre><code>## [1] &quot;I am quiet around strangers.&quot; &quot;I don&amp;#39;t talk a lot.&quot;     
+## [3] &quot;I have little to say.&quot;</code></pre>
+</div>
+<div id="cc-vector-1" class="section level3">
+<h3>2. CC Vector</h3>
+<pre class="r"><code>qa %&gt;% slice_max(order_by=xcoef2, n=top_x) %&gt;% pull(text)</code></pre>
+<pre><code>## [1] &quot;I reveal little about myself.&quot;                                   
+## [2] &quot;I am brave.&quot;                                                     
+## [3] &quot;I would have to be lost for a very long time before asking help.&quot;</code></pre>
+<pre class="r"><code>qa %&gt;% slice_max(order_by=ycoef2, n=top_x) %&gt;% pull(text)</code></pre>
+<pre><code>## [1] &quot;I never tell people the important things about myself.&quot;
+## [2] &quot;I am able to stand up for myself.&quot;                     
+## [3] &quot;I don&amp;#39;t talk a lot.&quot;</code></pre>
+</div>
+<div id="cc-vector-2" class="section level3">
+<h3>3. CC Vector</h3>
+<pre class="r"><code>qa %&gt;% slice_max(order_by=xcoef3, n=top_x) %&gt;% pull(text)</code></pre>
+<pre><code>## [1] &quot;I am good at making impromptu speeches.&quot;                    
+## [2] &quot;I have a strong personality.&quot;                               
+## [3] &quot;I can keep a conversation going with anyone about anything.&quot;</code></pre>
+<pre class="r"><code>qa %&gt;% slice_max(order_by=ycoef3, n=top_x) %&gt;% pull(text)</code></pre>
+<pre><code>## [1] &quot;I am never at a loss for words.&quot; &quot;I hate people.&quot;                 
+## [3] &quot;I do not care about sports.&quot;</code></pre>
+</div>
+</div>
+<div id="math" class="section level2">
+<h2>Math</h2>
+<ul>
+<li><p>Given <span class="math inline">\(X \in \mathbb{R}^{N \times M}\)</span> with observations <span class="math inline">\(g = 1,...N\)</span> and features <span class="math inline">\(Q^A_c\)</span> with <span class="math inline">\(c=1,...,M\)</span></p></li>
+<li><p>And <span class="math inline">\(Y \in \mathbb{R}^{N \times P}\)</span> with the same observations <span class="math inline">\(g = 1,...N\)</span> and different features <span class="math inline">\(Q^B_d\)</span> with <span class="math inline">\(d=1,...,P\)</span></p></li>
+<li><p>We seek to find <span class="math inline">\(\hat{h_X}\)</span> and <span class="math inline">\(\hat{h_Y}\)</span> (for now only first pair of canonical correlation vectors)</p></li>
+</ul>
+<p><span class="math display">\[
+\begin{align*}
+\hat{h_X}, \hat{h_Y} &amp;= \arg\max_{h_X, h_Y} corr(X h_X, Y h_Y) \\
+ &amp;= \arg\max_{h_X, h_Y} 
+ \frac{Cov(X h_X, Y h_Y)}{\sqrt{V(X h_X)} \sqrt{V(Y h_Y)}}
+\end{align*}
+\]</span></p>
+<ul>
+<li><p>We call <span class="math inline">\(z_X = X h_X\)</span> and <span class="math inline">\(z_Y = Y h_Y\)</span> the first pair of canonical variables.</p></li>
+<li><p>We will columns of <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are centered (so the mean for each feature is 0)</p></li>
+</ul>
+<p><span class="math display">\[
+\mathbb{E}[X_{:,c}] = 0 \quad \forall c=1,...,M
+\]</span></p>
+<ul>
+<li>Thus allows us to rewrite the correlation using inner products (or more specifically the dot product). Also not that this holds true because if <span class="math inline">\(X, Y\)</span> are centered, <span class="math inline">\(z_X, z_Y\)</span> will be centered.</li>
+</ul>
+<p><span class="math display">\[
+\begin{align*}
+corr(x,y) &amp;= \frac{Cov(x,y)}{\sqrt{V(x)} \sqrt{V(y)}} \\
+&amp;= \frac{\frac{1}{N} \sum_{i=1}^N(x_i-\bar{x})(y_i-\bar{y})^T}{\sqrt{\frac{1}{N} \sum_{i=1}^N(x_i-\bar{x})(x_i-\bar{x})^T} \sqrt{\frac{1}{N} \sum_{i=1}^N(y_i-\bar{y})(y_i-\bar{y})^T}} \\
+&amp;= \frac{\sum_{i=1}^Nx_i y_i^T}{\sqrt{ \sum_{i=1}^Nx_i x_i^T} \sqrt{ \sum_{i=1}^Nxy_i y_i^T}} \\
+&amp;= \frac{x^Ty}{\sqrt{x^Tx}\sqrt{y^Ty}} \\
+&amp;= \frac{\langle x,y \rangle}{\|x\|\|y\|}
+\end{align*}
+\]</span></p>
+<ul>
+<li>Thus we can rewrite the above equation:</li>
+</ul>
+<p><span class="math display">\[
+\begin{align*}
+\hat{h_X}, \hat{h_Y} &amp;= \arg\max_{h_X, h_Y} 
+\frac{Cov(X h_X, Y h_Y)}{\sqrt{V(X h_X)} \sqrt{V(Y h_Y)}} \\
+&amp;= \arg\max_{h_X, h_Y} \frac{(Xh_x)^T(Yh_y)}{\sqrt{(Xh_x)^T(Xh_x)}\sqrt{(Yh_y)^T(Yh_y)}} \\
+&amp;= \arg\max_{h_X, h_Y} \frac{(Xh_x)^T(Yh_y)}{\|Xh_x\|_2\|Yh_y\|_2}
+\end{align*}
+\]</span></p>
+<ul>
+<li>Since the correlation is scale invariant, we constrain the solution using</li>
+</ul>
+<p><span class="math display">\[
+\begin{align*}
+\hat{h_X}, \hat{h_Y}
+&amp;= \arg\max_{h_X, h_Y} (Xh_x)^T(Yh_y) \quad s.t. \; \|Xh_x\|_2=1, \; \|Yh_y\|_2 = 1
+\end{align*}
+\]</span></p>
+<ul>
+<li>The above equation holds true for the first pair of canonical vectors, but for the subsequent pairs, we require that the <span class="math inline">\(k\)</span>’th canonical variables <span class="math inline">\(Xh_x^{(k)}= z_x^{(k)} \in \mathbb{R}^N\)</span>, <span class="math inline">\(Yh_y^{(k)}= z_y^{(k)} \in \mathbb{R}^N\)</span> are orthogonal to all <span class="math inline">\((k-1)\)</span> pairs. This ensures that the canonical variables capture different axes of covariation.</li>
+</ul>
+<p><span class="math display">\[
+\begin{align*}
+\hat{h_X}^{(k)}, \hat{h_Y}^{(k)}
+= \arg\max_{h_X, h_Y} (Xh_x)^T(Yh_y) \quad s.t. &amp; \; \|Xh_x\|_2=1, \; \|Yh_y\|_2 = 1 \\
+&amp; (Xh_X^{(k)})^T(Xh_X^{(j)}) = 0 \; \forall \; j=1,...,k-1 \\
+&amp; (Yh_Y^{(k)})^T(Yh_Y^{(j)}) = 0 \; \forall \; j=1,...,k-1
+\end{align*}
+\]</span></p>
+<ul>
+<li>Given that <span class="math inline">\(N \geq M\)</span> and <span class="math inline">\(N \geq P\)</span>, the total number of canonical directions (pairs of canonical vectors) is limited by the rank of <span class="math inline">\(X\)</span> of <span class="math inline">\(Y\)</span>, we define the maximum number of directions as</li>
+</ul>
+<p><span class="math display">\[
+R = \min\{ rk(X), rk(Y) \}
+\]</span></p>
+<ul>
+<li><p>To solve the objective we transform the problem by "sphering of the centered matrices <span class="math inline">\(X \in \mathbb{R}^{N \times M}\)</span> and <span class="math inline">\(Y \in \mathbb{R}^{N \times P}\)</span>. Therefore, we first introduce the scatter matrices <span class="math inline">\(S_X = X^TX\)</span>, <span class="math inline">\(S_Y = Y^T Y\)</span>.</p></li>
+<li><p>Assuming that <span class="math inline">\(rk(X) = M\)</span> and <span class="math inline">\(rk(Y) = P\)</span>, <span class="math inline">\(S_X\)</span>, <span class="math inline">\(S_Y\)</span> are symmetric, positivie (semi)-definite, and thus we can factorize them into the non-negative square roots (similar to the cholesky decomposition):</p></li>
+</ul>
+<p><span class="math display">\[
+S_X = S_X^{1/2} S_X^{1/2}, \quad S_Y = S_Y^{1/2} S_Y^{1/2}
+\]</span></p>
+<ul>
+<li>Now we can “sphere” our matrices <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> via</li>
+</ul>
+<p><span class="math display">\[
+\tilde{X} = X S_X^{-1/2}, \tilde{Y} = Y S_Y^{-1/2}
+\]</span></p>
+<ul>
+<li>This is called “sphering” because the covariance of <span class="math inline">\(\tilde{X}\)</span> and <span class="math inline">\(\tilde{Y}\)</span> are scaled identity matrices (assuming that <span class="math inline">\(\tilde{X}\)</span> is still centered):</li>
+</ul>
+<p><span class="math display">\[
+\begin{align*}
+cov(\tilde{X}) &amp;= cov(X S_X^{-1/2}) \\
+&amp;= \frac{1}{N}(X S_X^{-1/2})^T(X S_X^{-1/2}) \\
+&amp;= \frac{1}{N} (S_X^{-1/2})^T X^T X S_X^{-1/2} \\
+&amp;= \frac{1}{N} S_X^{-1/2} S_X S_X^{-1/2} \\
+&amp;= \frac{1}{N} I
+\end{align*}
+\]</span></p>
+<ul>
+<li>The objective (for the first pair of canonical vectors) becomes:</li>
+</ul>
+<p><span class="math display">\[
+\begin{align*}
+\tilde{\hat{h_X}}, \tilde{\hat{h_Y}} &amp;= \arg\max_{\tilde{h_X}, \tilde{h_Y}} 
+(\tilde{X} \tilde{h_X})^T(\tilde{Y} \tilde{h_Y}) \quad s.t. &amp; \; \|\tilde{X} \tilde{h_X}\|_2=1, \; \|\tilde{Y} \tilde{h_Y}\|_2 = 1
+\end{align*}
+\]</span></p>
+<ul>
+<li>where <span class="math inline">\(h_X\)</span> and <span class="math inline">\(h_Y\)</span> can be transformed back via</li>
+</ul>
+<p><span class="math display">\[
+h_X = S_X^{-1/2}\tilde{h_X}, \quad h_Y = S_Y^{-1/2}\tilde{h_Y}
+\]</span></p>
+<ul>
+<li>Additionally, we can simplify the above formula using</li>
+</ul>
+<p><span class="math display">\[
+\begin{align*}
+ \|\tilde{X} \tilde{h_X}\|_2 &amp;= \sqrt{ (\tilde{X} \tilde{h_X})^T(\tilde{X} \tilde{h_X})} \\
+ &amp;= \sqrt{ \tilde{h_X}^T \tilde{X}^T \tilde{X} \tilde{h_X}} \\
+ &amp;=  \sqrt{ \tilde{h_X}^T S_X^{-1/2} X^T X S_X^{-1/2} \tilde{h_X}} \\
+ &amp;= \sqrt{\tilde{h_X}^T \tilde{h_X}} \\
+ &amp;= \| \tilde{h_X} \|_2
+\end{align*}
+\]</span></p>
+<ul>
+<li>Thus, we get the new objective</li>
+</ul>
+<p><span class="math display">\[
+\begin{align*}
+\tilde{\hat{h_X}}, \tilde{\hat{h_Y}} &amp;= \arg\max_{\tilde{h_X}, \tilde{h_Y}} 
+(\tilde{X} \tilde{h_X})^T(\tilde{Y} \tilde{h_Y}) \quad s.t. &amp; \; \|\tilde{h_X}\|_2=1, \; \|\tilde{h_Y}\|_2 = 1 \\
+&amp;= \arg\max_{\tilde{h_X}, \tilde{h_Y}} 
+\tilde{h_X}^T \tilde{X}^T \tilde{Y} \tilde{h_Y} \quad s.t. &amp; \; \|\tilde{h_X}\|_2=1, \; \|\tilde{h_Y}\|_2 = 1 \\
+\end{align*}
+\]</span></p>
+<ul>
+<li>We can solve this transformed objective via SVD of <span class="math inline">\(K = \tilde{X}^T \tilde{Y} \in \mathbb{R}^{M \times P}\)</span> (using the full SVD here, we get):</li>
+</ul>
+<p><span class="math display">\[
+\tilde{X}^T \tilde{Y} = U \Sigma V^T \quad \text{with} \quad U \in \mathbb{R}^{M \times M}, \Sigma \in \mathbb{R}^{M \times P}, V \in \mathbb{R}^{P \times P}
+\]</span></p>
+<ul>
+<li><span class="math inline">\(U\)</span>, <span class="math inline">\(V\)</span> are orthogonal, meaning it’s columns (<span class="math inline">\(u_i\)</span>, <span class="math inline">\(v_i\)</span>) are orthonormal:</li>
+</ul>
+<p><span class="math display">\[
+\begin{aligned}
+&amp; u_i^T u_j = 0 \quad \text {for } i \neq j \\
+&amp; u_i^T u_i = 1
+\end{aligned}
+\]</span></p>
+<ul>
+<li><p><span class="math inline">\(\Sigma\)</span> contains the singular values in sorted order on its diagonal such that <span class="math inline">\(\sigma_1 &gt; \sigma_2 &gt; ... &gt; \sigma_R\)</span>.</p></li>
+<li><p>Given that <span class="math inline">\(h_X = S_X^{-1/2}\tilde{h_X}\)</span>, <span class="math inline">\(h_Y = S_Y^{-1/2}\tilde{h_Y}\)</span> and <span class="math inline">\(\tilde{h_X} = u_i\)</span>, <span class="math inline">\(\tilde{h_Y} = v_i\)</span>, the canonical vectors are given by</p></li>
+</ul>
+<p><span class="math display">\[
+h_X^{(i)} = S_X^{-1/2} \tilde{h_X^{(i)}} = S_X^{-1/2} u_i \quad \text{for } i=1,...,R \\
+h_Y^{(i)} = S_X^{-1/2} \tilde{h_Y^{(i)}}  = S_Y^{-1/2} v_i \quad \text{for } i=1,...,R
+\]</span></p>
+<ul>
+<li>The canonical correlations corresponds to</li>
+</ul>
+<p><span class="math display">\[
+\rho^{(i)} = \sigma_i \quad \text{for } i=1,...,R
+\]</span></p>
+<ul>
+<li>Looking at the original objective</li>
+</ul>
+<p><span class="math display">\[
+\begin{align*}
+\hat{h_X}^{(k)}, \hat{h_Y}^{(k)}
+= \arg\max_{h_X, h_Y} (Xh_x)^T(Yh_y) \quad s.t. &amp; \; \|Xh_x\|_2=1, \; \|Yh_y\|_2 = 1 \\
+&amp; (Xh_X^{(k)})^T(Xh_X^{(j)}) = 0 \; \forall \; j=1,...,k-1 \\
+&amp; (Yh_Y^{(k)})^T(Yh_Y^{(j)}) = 0 \; \forall \; j=1,...,k-1
+\end{align*}
+\]</span></p>
+<ul>
+<li>We can validate that the constrains are fulfilled (the canonical variables <span class="math inline">\(z_X^{(i)}\)</span>, <span class="math inline">\(z_X^{(j)}\)</span> are orthonormal, because <span class="math inline">\(v_i\)</span>, <span class="math inline">\(v_j\)</span> are orthonormal by construction of the SVD).</li>
+</ul>
+<p><span class="math display">\[
+\begin{align*}
+(z_X^{(i)})^T z_X^{(j)} &amp;= (Xh_X^{(i)})^T (Xh_X^{(j)}) \\
+&amp;= (h_X^{(i)})^T X^T X h_X^{(j)} \\
+&amp;= (S_X^{-1/2} \tilde{h_X^{(i)}})^T S_X ( S_X^{-1/2} \tilde{h_X^{(j)}}) \\
+&amp;= (\tilde{h_X^{(i)}})^T S_X^{-1/2} S_X S_X^{-1/2} \tilde{h_X^{(j)}} \\
+&amp;=  (\tilde{h_X^{(i)}})^T \tilde{h_X^{(j)}} \\
+&amp;= v_i^T v_j
+\end{align*}
+\]</span></p>
+</div>
+<div id="own-implementation" class="section level2">
+<h2>Own Implementation</h2>
+<pre class="r"><code>X &lt;- as.matrix(test_A)
+Y &lt;- as.matrix(test_B)
+
+compute_cca &lt;- function(X, Y, scale=FALSE) {
+   
+   R = min(ncol(X), ncol(Y))
+   
+   # centering and scaling
+   X_centered &lt;- t( t(X) - Matrix::colMeans(X) )
+   Y_centered &lt;- t( t(Y) - Matrix::colMeans(Y) )
+   
+   if (scale) {
+      X_centered &lt;- t( t(X_centered) /  matrixStats::colSds(X_centered) )
+      Y_centered &lt;- t( t(Y_centered) /  matrixStats::colSds(Y_centered) )
+   }
+   
+   # get the scatter matrix
+   Sx &lt;- t(X_centered) %*% X_centered
+   Sy &lt;- t(Y_centered) %*% Y_centered
+   
+   # factorize into square root spd matrices
+   Sx_eigen &lt;- eigen(Sx)
+   Sx_sqrt &lt;- Sx_eigen$vectors %*% diag(sqrt(Sx_eigen$values)) %*% 
+      solve(Sx_eigen$vectors)
+   Sy_eigen &lt;- eigen(Sy)
+   Sy_sqrt &lt;- Sy_eigen$vectors %*% diag(sqrt(Sy_eigen$values)) %*% 
+      solve(Sy_eigen$vectors)
+   stopifnot(all(dplyr::near(Sx_sqrt %*% Sx_sqrt, Sx)))
+   stopifnot(all(dplyr::near(Sy_sqrt %*% Sy_sqrt, Sy)))
+   
+   # compute the inverse
+   Sx_sqrt_inv &lt;- solve(Sx_sqrt)
+   Sy_sqrt_inv &lt;- solve(Sy_sqrt)
+   
+   # compute K and its singular value decomposition
+   K = t(X_centered%*%Sx_sqrt_inv) %*% (Y_centered%*%Sy_sqrt_inv)
+   svd_res &lt;- svd(K, nu = ncol(X), nv = ncol(Y))
+   
+   # get the left and right canonical vectors
+   hxs &lt;- Sx_sqrt_inv %*% svd_res$u
+   hys &lt;- Sy_sqrt_inv %*% svd_res$v
+   
+   # compute the left and right canonical variables
+   zxs &lt;- X_centered %*% hxs
+   zys &lt;- Y_centered %*% hys
+   
+   # check that the canonical variables are orthonormal
+   stopifnot(
+      all(dplyr::near(t(zxs[,1]) %*% zxs[,2], 0),
+       dplyr::near(t(zys[,1]) %*% zys[,2], 0))
+   )
+   
+   # check that the correlations and the singular values corresponds
+   stopifnot(
+      dplyr::near(purrr::map_dbl(1:ncol(zxs), ~ stats::cor(zxs[,.x], zys[,.x])),
+                  svd_res$d)
+   )
+   
+   return(list(cor = svd_res$d, xcoef = hxs, ycoef = hys, R = R))
+}</code></pre>
+<p>Testing and comparing the function. For the proper canonical variables, the results are the same.</p>
+<pre class="r"><code>test &lt;- compute_cca(as.matrix(test_A), as.matrix(test_B))
+all(dplyr::near(test$cor, cca_out$cor))</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>all(dplyr::near(abs(test$xcoef[,1:test$R]), abs(cca_out$xcoef[,1:test$R])))</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>all(dplyr::near(abs(test$ycoef[,1:test$R]), abs(cca_out$ycoef[,1:test$R])))</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+</div>
+</div>
+<div id="application-to-single-cell-data" class="section level1">
+<h1>Application to Single-Cell Data</h1>
+<div id="data-1" class="section level2">
+<h2>Data</h2>
+<p>We focus here on the implementation by Seurat. <span class="citation">(<a href="#ref-10.1038/nbt.4096" role="doc-biblioref"><em>2</em></a>, <a href="#ref-10.1016/j.cell.2019.05.031" role="doc-biblioref"><em>3</em></a>)</span></p>
+<p>Our input are the reference snRNA-seq dataset <span class="math inline">\(X\)</span> and the query snATAC-seq dataset <span class="math inline">\(Y\)</span>. For integration we only use the selected features, namely the union of the most highly variable features from each dataset as determined by the <code>vst</code>-method. (say we have about 4500 features).</p>
+<p>So we should note that the features for the snATAC-seq data are not the actual gene expression values but rather gene scores which are computed in ArchR by summing up the number of Tn5 insertion in and in proximity to a given gene body weighted by the inverse distance to that particular gene. (also per default ArchR arguments, we are also not using the raw gene scores but rather smoothed gene scores based on MAGIC (Markov Affinity-based Graph Imputation of Cells))</p>
+<p>For the notation below we will say that we have <span class="math inline">\(g = 1,...,N\)</span> features and <span class="math inline">\(X\)</span> has <span class="math inline">\(m=1,...,M\)</span> cells whereas <span class="math inline">\(Y\)</span> has <span class="math inline">\(p=1,...,P\)</span> cells such that: <span class="math inline">\(X \in \mathbb{R}^{N \times M}\)</span> and <span class="math inline">\(Y \in \mathbb{R}^{N \times P}\)</span>.</p>
+</div>
+<div id="cca-embedding" class="section level2">
+<h2>CCA Embedding</h2>
+<p>We can use CCA to compute a common low-dimensional embedding (<code>Seurat::RunCCA</code>), which is used to find pairs of cells (“TransferAnchors”) from each dataset that are similar.</p>
+<p>So we essentially do the same as shown above and use the loadings in the canonical correlation vectors as coordinates for the cells. So the cells lay in a space with as many dimensions as pairs of canonical correlation vectors we computed.</p>
+<p>However, we have to account for the fact that usually we have many more cells than features <span class="math inline">\(N &lt;&lt; (M+P)\)</span>. Therefore, the Seurat authors opted to use “diagonal penalized CCA,” where the covariance matrices are treated as diagonal matrices (setting all off-diagonal terms to 0) (What does this essentially do? Why does it help?). <span class="citation">(<a href="#ref-10.1093/biostatistics/kxp008" role="doc-biblioref"><em>1</em></a>)</span></p>
+<p>Further, not the full SVD is computed but rather k singular vectors and values are approximated using the augmented implicitly restarted Lanczos bidiagonalization algorithm which is implemented in <code>irlba</code>.</p>
+<p>Before proceeding we need to control for global differences in scale (what exactly does that mean?).</p>
+<ul>
+<li><p>Previously in Butler et al. (2018) <span class="citation">(<a href="#ref-10.1038/nbt.4096" role="doc-biblioref"><em>2</em></a>)</span>, the pairs of canonical vectors <span class="math inline">\(h_{X}^{(i)}\)</span> and <span class="math inline">\(h_{Y}^{(i)}\)</span> we aligned by computing a metagene using a linear combination of the 30 genes with the highest biweight midcorrelation (bicor) to <span class="math inline">\(h_{X}^{(i)}\)</span> and <span class="math inline">\(h_{Y}^{(i)}\)</span>. Now have each cell in <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> laying in a 30-dimensional space defined by the metagene. Lastly, to align the cells dynamic time warping (DTW) is used, which places a cell as close as possible to the most similar cell in the other dataset while maintaining the relative ordering of the cells. Now the same dynamic time warping is applied to the canonical correlation vectors leading a common aligned scale. This procedure is applied to all canonical vectors <span class="math inline">\(h_{X}^{(i)}\)</span> and <span class="math inline">\(h_{Y}^{(i)}\)</span> with <span class="math inline">\(i=1,...,k\)</span>.</p></li>
+<li><p>However, in Stuart et al. (2019) <span class="citation">(<a href="#ref-10.1016/j.cell.2019.05.031" role="doc-biblioref"><em>3</em></a>)</span> the procedure was simplified. To correct for global difference in scale between the two different datasets L2 normalization is used on the cell embeddings. Assuming that <span class="math inline">\(A_i\)</span> is the the coordinate vector for a cell <span class="math inline">\(i\)</span> such that <span class="math inline">\(|A| = k\)</span>, we normalize the coordinates using:</p></li>
+</ul>
+<p><span class="math display">\[
+\hat{A} = \frac{A}{|A|_2}
+\]</span></p>
+</div>
+<div id="transfer-anchors" class="section level2">
+<h2>Transfer Anchors</h2>
+<p>In our common CCA embedding we search for mutual nearest neighbors, e.g. assuming <code>k.anchor=10</code>, cell A and cell B are MNNs if cell A is among the 10 nearest neighbors of cell B, and cell B is among the 10 nearest neighbors of cell A. We call these pairs of cell <code>TransferAnchors</code>.</p>
+<p>So in the example below A and B are MNN. B is the closest cell for C, but the are not MNN (here assuming that <code>k.anchor=1</code>)</p>
+<pre class="r"><code>suppressPackageStartupMessages(library(tidyverse))
+tibble::tribble(
+  ~x, ~y, ~name,
+   6, 7, &quot;A&quot;,
+   7, 4, &quot;B&quot;,
+   2, 2, &quot;C&quot;,
+   ) %&gt;%
+   ggplot() +
+   geom_point(aes(x=x, y=y, color=name), size=10) +
+   lims(x=c(0,10), y=c(0,10)) +
+   labs(color=&quot;Cell&quot;)</code></pre>
+<p><img src="integration_cca_files/figure-html/unnamed-chunk-18-1.png" width="576" /></p>
+<p>After finding these integration anchors in the low-dimensional space, they are filtered based on the high-dimensional original space. In particular the 200 (<code>max.features = 200</code>) most informative features for the CCA (i.e. features with the highest loading) are used for filtering. So for each query cell of an anchor cell pair the corresponding reference cell must be among the 200 (<code>k.filter = 200</code>) nearest neighbors in this “high-dimensional space.”</p>
+<p>After filtering the integration anchors are scored based on the overlap on their neighborhood. In particular for both the reference and the query cell the 30 (<code>k.score = 30</code>) nearest neighbors are determined in the same dataset (within-dataset neighbors) and the other-dataset using the low-dimensional embedding. Thus, we have 4 matrices, namely a) the NN of the reference cell from the reference dataset, b) the NN of the reference cell from the query dataset, c) the NN of the query cell from the reference datset, d) the NN of the query cell from the query dataset. Now we determine the overlap between a) and c), as well as b) and d). We combine the overlap measures and call it the score (“how big is the overlap of the neighborhoods”). Furthermore, the effect of outliers is reduced by using the 0.01 and 0.9 quantiles to rescale the anchor scores to a range of 0 to 1.</p>
+</div>
+<div id="transfer-data" class="section level2">
+<h2>Transfer Data</h2>
+<div id="weight-matrix" class="section level3">
+<h3>Weight Matrix</h3>
+<p>Then we can use the <code>TransferData</code> function from <code>Seurat</code> to for example impute the RNA-PCA coordinates in the ATAC-seq data. But how exactly does this work?</p>
+<p>Having the anchor cell pairs, we construct a weight matrix <span class="math inline">\(W\)</span> which described the association between each query cell <span class="math inline">\(c\)</span> and each anchor pair <span class="math inline">\(i\)</span>.</p>
+<p>We start by constructing the weighted distance matrix for each query cell <span class="math inline">\(c\)</span> and each anchor pair <span class="math inline">\(i\)</span> (meaning the query cell from this cell pair). We use the distance to the <code>k.weight</code> nearest anchor query cell as well as the anchor score <span class="math inline">\(S_i\)</span> to weight all the distances.</p>
+<p><span class="math display">\[
+D_{c, i}=\left(1-\frac{\operatorname{dist}\left(c, a_{i}\right)}{\operatorname{dist}\left(c, a_{k . w e i g h t}\right)}\right) S_{a_{i}}
+\]</span></p>
+<p>Assuming we have the weight matrix, we continue by applying a Gaussian kernel. So the weights decay according to a “Gaussian Curve” with increasing distance.</p>
+<p><span class="math display">\[
+\tilde{D}_{c, i}=1-\mathrm{e}^{\frac{-D_{c, i}}{(2 / s d)^{2}}}
+\]</span></p>
+<p>where sd is the Gaussian kernel bandwidth, set to 1 by default. Finally, we normalize across all k.weight anchors:</p>
+<p><span class="math display">\[
+W_{c, i}=\frac{\tilde{D}_{c, i}}{\sum_{1}^{j=k . \text { weight }} \tilde{D}_{c, j}}
+\]</span></p>
+</div>
+<div id="discrete-data" class="section level3">
+<h3>Discrete Data</h3>
+<p>For cell metadata transfer, we create a binary classification matrix <span class="math inline">\(L\)</span> containing the classification information for each anchor cell in the reference dataset. Specifically, each row in <span class="math inline">\(L\)</span> corresponds to a possible class and each column corresponds to a reference anchor.</p>
+<p>If the reference cell in the anchor belongs to the corresponding class, that entry in the matrix is filled with a <span class="math inline">\(1\)</span>, otherwise the entry is assigned a <span class="math inline">\(0\)</span>.</p>
+<p>We then compute label predictions, <span class="math inline">\(P_{l}\)</span>, by multiplying the anchor classification matrix <span class="math inline">\(L\)</span> with the transpose of the weights matrix <span class="math inline">\(W\)</span> :</p>
+<p><span class="math display">\[
+P_{l}=L W^{T}
+\]</span></p>
+<p>This returns a prediction score for each class for every cell in the query dataset that ranges from 0 to 1 , and sums to <span class="math inline">\(1\)</span>.</p>
+</div>
+<div id="continuous-data" class="section level3">
+<h3>Continuous Data</h3>
+<p>Our procedure for transferring continuous data is closely related to discrete label transfer.</p>
+<p>We compute new feature expression predictions, <span class="math inline">\(P_{f}\)</span>, by multiplying a matrix of anchor features to be transferred, <span class="math inline">\(F\)</span>, with the transpose of the weights matrix <span class="math inline">\(W\)</span>:</p>
+<p><span class="math display">\[
+P_{f}=F W^{T}
+\]</span></p>
+<p>In words: For a given query cell <span class="math inline">\(c\)</span> we get a the sum of the classes of their closest anchor cells weighted by the distance and the score of that anchor pair.</p>
+<p><img src="img/discrete_transfer.png" width="100%" style="display: block; margin: auto;" /></p>
+<p>This returns a predicted expression matrix for each feature (row) in <span class="math inline">\(F\)</span> for each cell in the query dataset.</p>
+</div>
+</div>
+<div id="toy-dataset" class="section level2">
+<h2>Toy Dataset</h2>
+<p>For illustration purposes, we will create a much smaller mock example.</p>
+<p>For now I simply created the gene expression matrix <span class="math inline">\(X\)</span> by sampling from <code>0:5</code> with decreasing probabilities. The same is done for the gene score matrix <span class="math inline">\(Y\)</span> with the addition that some cells are simply taken from <span class="math inline">\(X\)</span>. These should be our integration anchors in the end</p>
+<p>It would be fun to actually simulate some kind of latent space which we use to create the matrices in some kind of generative process.</p>
+<pre class="r"><code>set.seed(42)
+
+get_count_matrix &lt;- function(ngenes, ncells, cell_prefix=&quot;c&quot;) {
+   mtx &lt;- matrix(sample(x=0:5, prob=c(0.5, 0.2, 0.1, 0.1, 0.05, 0.05), 
+                        size=ngenes*ncells, replace = TRUE),
+                 nrow = ngenes, ncol = ncells)
+   rownames(mtx) &lt;- paste0(&quot;gene_&quot;, 1:nrow(mtx))
+   colnames(mtx) &lt;- paste0(cell_prefix, &quot;_&quot;, 1:ncol(mtx))
+   return(mtx)
+}
+
+X &lt;- get_count_matrix(6, 10, cell_prefix=&quot;c&quot;)
+
+Y &lt;- get_count_matrix(6, 6, cell_prefix=&quot;d&quot;) %&gt;%
+   cbind(X[, sample(x=1:ncol(X), size=3, replace=TRUE)]) %&gt;%
+   .[, sample(1:ncol(.))] %&gt;% # shuffle
+   `colnames&lt;-`(., paste0(&quot;d_&quot;, 1:ncol(.))) # set colnames
+
+p1 &lt;- ComplexHeatmap::pheatmap(
+   X, 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(min(X), max(X)), c(&quot;yellow&quot;, &quot;darkorange&quot;), transparency = 0.5),
+   column_title = &quot;Gene Expression Matrix X&quot;,
+   heatmap_legend_param = list(title = &quot;Count&quot;),
+   legend = FALSE,
+   number_format = &quot;%.0f&quot;
+   )</code></pre>
+<p><img src="integration_cca_files/figure-html/unnamed-chunk-20-1.png" width="768" /></p>
+<pre class="r"><code>p2 &lt;- ComplexHeatmap::pheatmap(
+   Y, 
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(min(Y), max(Y)), c(&quot;yellow&quot;, &quot;darkorange&quot;), transparency = 0.5),
+   column_title = &quot;Gene Score Matrix Y&quot;,
+   heatmap_legend_param = list(title = &quot;Count&quot;),
+   legend = FALSE,
+   number_format = &quot;%.0f&quot;
+   )</code></pre>
+<p><img src="integration_cca_files/figure-html/unnamed-chunk-20-2.png" width="768" /></p>
+<pre class="r"><code>grid.newpage()
+pushViewport(viewport(layout = grid.layout(nr = 1, nc = 2)))
+pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 1))
+draw(p1, newpage = FALSE)
+upViewport()
+
+pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 2))
+draw(p2, newpage = FALSE)
+upViewport()</code></pre>
+<p><img src="integration_cca_files/figure-html/unnamed-chunk-20-3.png" width="768" /></p>
+<p>By inspection we can find the cells in Y that were actually taken from X. We aim to find those cells in both datasets that correspond to each other, i.e. that are highly similar.</p>
+<p>Next we will center and scale the data and then compute the SVD.</p>
+<pre class="r"><code>X_centered &lt;- t( t(X) - Matrix::colMeans(X))
+Y_centered &lt;- t( t(Y) - Matrix::colMeans(Y))
+X_scaled &lt;- t(t(X_centered) / matrixStats::colSds(X_centered))
+Y_scaled &lt;- t(t(Y_centered) / matrixStats::colSds(Y_centered))
+K = t(X_scaled) %*% Y_scaled
+svd_res &lt;- svd(K)
+
+hx &lt;- svd_res$u[,1:3] %&gt;%
+   `rownames&lt;-`(.,paste0(&quot;c_&quot;, 1:nrow(.))) %&gt;%
+   `colnames&lt;-`(.,paste0(&quot;u_&quot;, 1:ncol(.)))
+
+hy &lt;- svd_res$v[,1:3] %&gt;%
+   `rownames&lt;-`(.,paste0(&quot;d_&quot;, 1:nrow(.))) %&gt;%
+   `colnames&lt;-`(.,paste0(&quot;v_&quot;, 1:ncol(.)))
+
+p1 &lt;- ComplexHeatmap::pheatmap(
+   hx,
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(min(hx), max(hx)), 
+                        c(&quot;blue&quot;, &quot;yellow&quot;), transparency = 0.5),
+   column_title = &quot;Left Canonical Vector h_X&quot;,
+   legend = FALSE,
+   number_format = &quot;%.1f&quot;
+   )</code></pre>
+<p><img src="integration_cca_files/figure-html/unnamed-chunk-21-1.png" width="576" /></p>
+<pre class="r"><code>p2 &lt;- ComplexHeatmap::pheatmap(
+   hy,
+   cluster_rows = F, cluster_cols = F,
+   display_numbers = T, 
+   fontsize_number = 12, 
+   column_names_side = c(&quot;top&quot;),
+   row_names_side = c(&quot;left&quot;),
+   angle_col = c(&quot;0&quot;),
+   circlize::colorRamp2(c(min(hy), max(hy)), 
+                        c(&quot;blue&quot;, &quot;yellow&quot;), transparency = 0.5),
+   column_title = &quot;Right Canonical Vector h_Y&quot;,
+   legend = FALSE,
+   number_format = &quot;%.1f&quot;
+   )</code></pre>
+<p><img src="integration_cca_files/figure-html/unnamed-chunk-21-2.png" width="576" /></p>
+<pre class="r"><code>grid.newpage()
+pushViewport(viewport(layout = grid.layout(nr = 1, nc = 2)))
+pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 1))
+draw(p1, newpage = FALSE)
+upViewport()
+
+pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 2))
+draw(p2, newpage = FALSE)
+upViewport()</code></pre>
+<p><img src="integration_cca_files/figure-html/unnamed-chunk-21-3.png" width="576" /></p>
+<p>Here are scatter plots of <span class="math inline">\(z_X\)</span> and <span class="math inline">\(z_Y\)</span>:</p>
+<pre class="r"><code>zx &lt;- X %*% hx
+zy &lt;- Y %*% hy
+
+cbind(zx, zy) %&gt;%
+   as.data.frame() %&gt;%
+   rownames_to_column(var=&quot;gene&quot;) %&gt;%
+   pivot_longer(cols=!gene) %&gt;%
+   mutate(name = str_replace(name, &quot;u&quot;, &quot;zx&quot;),
+          name = str_replace(name, &quot;v&quot;, &quot;zy&quot;)) %&gt;%
+   mutate(comp = str_extract(name, &quot;[0-9]$&quot;),
+          comp = paste(&quot;Canonical Pair&quot;, comp)) %&gt;%
+   mutate(coord = ifelse(str_starts(name, &quot;zx&quot;), &quot;x&quot;, &quot;y&quot;)) %&gt;%
+   dplyr::select(-name) %&gt;%
+   pivot_wider(names_from = coord, values_from = value) %&gt;%
+   ggplot() +
+   geom_point(aes(x=x, y=y)) +
+   facet_wrap(~comp, scales = &quot;free&quot;) +
+   labs(x = &quot;z_X&quot;, y = &quot;z_Y&quot;)</code></pre>
+<p><img src="integration_cca_files/figure-html/unnamed-chunk-22-1.png" width="864" /></p>
+</div>
+</div>
+<div id="questions" class="section level1">
+<h1>Questions</h1>
+<ol style="list-style-type: decimal">
+<li><p>What is the effect of different proportions of cell types?</p></li>
+<li><p>What is the difference to simply computing the PCA on the concatenated matrices?</p></li>
+</ol>
+</div>
+<div id="referencess" class="section level1 unnumbered">
+<h1 class="unnumbered">Referencess</h1>
+<div id="refs" class="references csl-bib-body">
+<div id="ref-10.1093/biostatistics/kxp008" class="csl-entry">
+<div class="csl-left-margin">1. </div><div class="csl-right-inline">D. M. Witten, R. Tibshirani, T. Hastie, <span class="nocase">A penalized matrix decomposition, with applications to sparse principal components and canonical correlation analysis</span>. <em>Biostatistics</em>. <strong>10</strong>, 515–534 (2009).</div>
+</div>
+<div id="ref-10.1038/nbt.4096" class="csl-entry">
+<div class="csl-left-margin">2. </div><div class="csl-right-inline">A. Butler, P. Hoffman, P. Smibert, E. Papalexi, R. Satija, <span class="nocase">Integrating single-cell transcriptomic data across different conditions, technologies, and species</span>. <em>Nature Biotechnology</em>. <strong>36</strong>, 411–420 (2018).</div>
+</div>
+<div id="ref-10.1016/j.cell.2019.05.031" class="csl-entry">
+<div class="csl-left-margin">3. </div><div class="csl-right-inline">T. Stuart, A. Butler, P. Hoffman, C. Hafemeister, E. Papalexi, W. M. Mauck, Y. Hao, M. Stoeckius, P. Smibert, R. Satija, <span class="nocase">Comprehensive Integration of Single-Cell Data</span>. <em>Cell</em>. <strong>177</strong>, 1888–1902.e21 (2019).</div>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

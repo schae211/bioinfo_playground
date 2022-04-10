@@ -9,6 +9,8 @@ navbar:
     menu:
     - text: "Iterative LSI"
       href: iterative_lsi.html
+    - text: "Integration via CCA"
+      href: integration_cca.html
 output:
   html_document:
     toc: true
