@@ -206,7 +206,7 @@ qa %>% slice_max(order_by=xcoef3, n=top_x) %>% pull(text)
 qa %>% slice_max(order_by=ycoef3, n=top_x) %>% pull(text)
 ```
 
-## Math
+# Solution via SVD
 
 * Given $X \in \mathbb{R}^{N \times M}$ with observations $g = 1,...N$ and features $Q^A_c$ with $c=1,...,M$
 
@@ -397,7 +397,7 @@ $$
 \end{align*}
 $$
 
-## Own Implementation
+# Implementation from Scratch
 
 ```{r}
 X <- as.matrix(test_A)
@@ -473,6 +473,14 @@ all(dplyr::near(abs(test$ycoef[,1:test$R]), abs(cca_out$ycoef[,1:test$R])))
 
 
 # Application to Single-Cell Data
+
+## Integration of scRNA data
+
+TODO
+
+## Integration of scRNA and scATAC data
+
+TODO
 
 ## Data
 

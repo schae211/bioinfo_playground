@@ -170,11 +170,11 @@ cell_qc <- purrr::map_dfr(unique(coldata$sample), function(smp) {
 
 coldata <- coldata %>%
   dplyr::left_join(cell_qc, by=c("sample", "barcode")) %>%
-  select(sample, barcode, sum_umis, detected_genes, non_empty)
+  dplyr::select(sample, barcode, sum_umis, detected_genes, non_empty)
 
 dim(rna_raw)
-rna <- rna_raw[,coldata %>% filter(non_empty) %>% pull(barcode)]
-coldata <- coldata %>% filter(non_empty)
+rna <- rna_raw[,coldata %>% dplyr::filter(non_empty) %>% dplyr::pull(barcode)]
+coldata <- coldata %>% dplyr::filter(non_empty)
 dim(rna)
 ```
 
@@ -318,7 +318,7 @@ coldata <- coldata %>%
   ungroup()
 
 coldata %>%
-  filter(qc_pass) %>%
+  dplyr::filter(qc_pass) %>%
   glimpse()
 ```
 

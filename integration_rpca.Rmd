@@ -1,0 +1,32 @@
+---
+title: "Integration via Reciprocal PCA"
+author: "Philipp SL Schäfer"
+date: '`r format(Sys.time(), "%Y-%m-%d-%H-%M")`'
+editor_options: 
+  chunk_output_type: inline
+bibliography: references.bib
+csl: science.csl
+link-citations: TRUE
+---
+
+```{r}
+suppressPackageStartupMessages({
+   library(tidyverse)
+   library(ComplexHeatmap)
+   library(grid)
+   library(gridExtra)
+   library(CCA)
+   library(GGally)
+})
+Sys.setenv(RETICULATE_PYTHON =
+             "/home/pschaefer/miniconda3/envs/r-reticulate/bin/python")
+```
+
+# Status
+
+Work in progress.
+
+# Overview
+
+# Referencess
+

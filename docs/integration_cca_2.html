@@ -390,7 +390,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">Integration via CCA</h1>
 <h4 class="author">Philipp SL Schäfer</h4>
-<h4 class="date">2022-04-11-14-28</h4>
+<h4 class="date">2022-04-11-14-18</h4>
 
 </div>
 
@@ -409,12 +409,19 @@ Sys.setenv(RETICULATE_PYTHON =
 <h1>Status</h1>
 <p>Work in progress.</p>
 </div>
-<div id="introduction" class="section level1">
-<h1>Introduction</h1>
+<div id="overview" class="section level1">
+<h1>Overview</h1>
+<ol style="list-style-type: decimal">
+<li><p>CCA Objective</p></li>
+<li><p>Classic Example</p></li>
+<li><p>Solution via SVD</p></li>
+<li><p>Implementation</p></li>
+<li><p>Application to single cell data</p></li>
+</ol>
+<p>5a) Integration of two scRNA-seq datasets</p>
+<p>5b) Integration of scRNA-seq and scATAC-seq datasets</p>
 <ul>
-<li><p>To understand the integration of single-cells via canonical correlation analysis (CCA), we will first focus on applications that are more intuitive to understand</p></li>
-<li><p>Then, we will have a look at how to solve the CCA objective</p></li>
-<li><p>Lastly, we will explore how CCA can be used to integrate single cell data.</p></li>
+<li>In particular we want to transfer RNA-seq counts and the celltype labels from the scRNA-seq dataset to the scATAC-seq datasets</li>
 </ul>
 </div>
 <div id="resources" class="section level1">
@@ -427,10 +434,25 @@ Sys.setenv(RETICULATE_PYTHON =
 <li><p>Paper: Comprehensive Integration of Single-Cell Data (Seurat V3) <span class="citation">(<a href="#ref-10.1038/nbt.4096" role="doc-biblioref"><em>2</em></a>, <a href="#ref-10.1016/j.cell.2019.05.031" role="doc-biblioref"><em>3</em></a>)</span></p></li>
 </ul>
 </div>
-<div id="background-intuition" class="section level1">
-<h1>Background &amp; Intuition</h1>
-<div id="data" class="section level2">
-<h2>Data</h2>
+<div id="cca-objective" class="section level1">
+<h1>CCA Objective</h1>
+<p>Given two datasets <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>,</p>
+<ul>
+<li><p><span class="math inline">\(X \in \mathbb{R}^{N \times M}\)</span> with observation <span class="math inline">\(g = 1,...N\)</span> and features <span class="math inline">\(Q^A_c\)</span> with <span class="math inline">\(c=1,...,M\)</span></p></li>
+<li><p><span class="math inline">\(Y \in \mathbb{R}^{N \times P}\)</span> with observation <span class="math inline">\(g = 1,...N\)</span> and features <span class="math inline">\(Q^B_d\)</span> with <span class="math inline">\(d=1,...,P\)</span></p></li>
+</ul>
+<p>Our goal is to find linear combinations of the columns of <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>, such that the resulting vectors of length <span class="math inline">\(N\)</span> are maximally correlated.</p>
+<p>In mathematical terms we seek to find the canonical correlation vectors <span class="math inline">\(\hat{h_X}\)</span> and <span class="math inline">\(\hat{h_Y}\)</span> such that <span class="math inline">\(X \hat{h_X}\)</span> and <span class="math inline">\(Y \hat{h_Y}\)</span> are maximally correlated.</p>
+<p><span class="math display">\[
+\hat{h_X}, \hat{h_Y} = \arg\max_{h_X, h_Y} corr(X h_X, Y h_Y)
+\]</span></p>
+<p>Why are we even interested in that? An example would be to compare the loadings in a pair of canonical vectors <span class="math inline">\(\hat{h_X}\)</span>, <span class="math inline">\(\hat{h_Y}\)</span> : Features from <span class="math inline">\(X\)</span> that have a high absolute loading in <span class="math inline">\(\hat{h_X}\)</span>, and features from <span class="math inline">\(Y\)</span> that have a high absolute loading in <span class="math inline">\(\hat{h_Y}\)</span> show some pattern of covariation because they might be based on the same latent factors (e.g. personality traits).</p>
+</div>
+<div id="classic-example" class="section level1">
+<h1>Classic Example</h1>
+<p>So get an intuition for CCA, we will look at a rather classical example.</p>
+<div id="data-questions" class="section level2">
+<h2>Data &amp; Questions</h2>
 <p>We will download the questions that were used for the development of the Multidimensional Introversion-Extraversion Scales (see here: <a href="https://openpsychometrics.org/_rawdata" class="uri">https://openpsychometrics.org/_rawdata</a>).</p>
 <p>The test contained 91 questions about the personality of the participants. We remove Q44 which is doubled.</p>
 <pre class="r"><code>if (!any(str_detect(list.dirs(&quot;/mnt/sda/data&quot;, recursive = FALSE), 
@@ -469,26 +491,18 @@ questions</code></pre>
 <p>For the sake of this tutorial we will randomly split the test into test A with the first 40 questions and test B with the last 50 questions.</p>
 <pre class="r"><code>test_A &lt;- q_cleaned[,1:40]
 test_B &lt;- q_cleaned[,41:90]</code></pre>
-<p>So after all we have two datasets <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>:</p>
+<p>So after all we have the following datasets <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>:</p>
 <ul>
 <li><p><span class="math inline">\(X \in \mathbb{R}^{N \times M}\)</span> with persons/observation <span class="math inline">\(g = 1,...N\)</span> (here: <span class="math inline">\(N=7188\)</span>) and questions <span class="math inline">\(Q^A_c\)</span> with <span class="math inline">\(c=1,...,M\)</span></p></li>
 <li><p><span class="math inline">\(Y \in \mathbb{R}^{N \times P}\)</span> with persons/observation <span class="math inline">\(g = 1,...N\)</span> (here: <span class="math inline">\(N=7188\)</span>) and questions <span class="math inline">\(Q^B_d\)</span> with <span class="math inline">\(d=1,...,P\)</span></p></li>
 </ul>
-</div>
-<div id="cca-objective" class="section level2">
-<h2>CCA Objective</h2>
-<p>Our goal is to find linear combinations of the columns of the questions scores from test A and the question scores from test B, such that the resulting vectors of length <span class="math inline">\(N\)</span> are maximally correlated.</p>
+<p>And translating the CCA objective for this tasks, our goal is to find linear combinations of the columns of the questions scores from test A and the question scores from test B, such that the resulting vectors of length <span class="math inline">\(N\)</span> are maximally correlated.</p>
 <p>In mathematical terms we seek to find the canonical correlation vectors <span class="math inline">\(\hat{h_X}\)</span> and <span class="math inline">\(\hat{h_Y}\)</span> such that <span class="math inline">\(X \hat{h_X}\)</span> and <span class="math inline">\(Y \hat{h_Y}\)</span> are maximally correlated.</p>
 <p><span class="math display">\[
 \hat{h_X}, \hat{h_Y} = \arg\max_{h_X, h_Y} corr(X h_X, Y h_Y)
 \]</span></p>
 <p>Thus, questions that get a high loading in <span class="math inline">\(\hat{h_X}\)</span> and questions that get a high loading in <span class="math inline">\(\hat{h_Y}\)</span> will be similar, meaning they query similar personality traits.</p>
 <p>We can find <span class="math inline">\(min(M,P)\)</span> pairs of canonical correlation vectors as desribed below in the math section.</p>
-<p><strong>Question:</strong> What is the advantage over performing PCA on the merged matrix <span class="math inline">\([X,Y]\)</span>?</p>
-<ul>
-<li><p>I think the main advantage is that the principal components of the merged matrix <span class="math inline">\([X,Y]\)</span> might be dominated by the features from one datasets.</p></li>
-<li><p>Although I wonder if this is really an issue if I scale the data such that every feature has unit variance.</p></li>
-</ul>
 </div>
 <div id="results" class="section level2">
 <h2>Results</h2>
@@ -498,7 +512,7 @@ test_B &lt;- q_cleaned[,41:90]</code></pre>
 <pre class="r"><code>ggplot() +
    geom_point(aes(x=1:length(cca_out$cor), y=cca_out$cor)) +
    labs(y = &quot;Correlation Coefficient&quot;, x = &quot;Index&quot;)</code></pre>
-<p><img src="integration_cca_files/figure-html/unnamed-chunk-6-1.png" width="576" /></p>
+<p><img src="integration_cca_2_files/figure-html/unnamed-chunk-6-1.png" width="576" /></p>
 <div id="cc-vector" class="section level3">
 <h3>1. CC Vector</h3>
 <p>Checking which questions from A and which questions from B got a high loading in the first canonical correlation vector.</p>
@@ -751,9 +765,8 @@ h_Y^{(i)} = S_X^{-1/2} \tilde{h_Y^{(i)}}  = S_Y^{-1/2} v_i \quad \text{for } i=1
 </div>
 <div id="implementation-from-scratch" class="section level1">
 <h1>Implementation from Scratch</h1>
-<pre class="r"><code>X &lt;- as.matrix(test_A)
-Y &lt;- as.matrix(test_B)
-
+<pre class="r"><code>#X &lt;- as.matrix(test_A)
+#Y &lt;- as.matrix(test_B)
 compute_cca &lt;- function(X, Y, scale=FALSE) {
    
    R = min(ncol(X), ncol(Y))
@@ -822,35 +835,254 @@ all(dplyr::near(test$cor, cca_out$cor))</code></pre>
 </div>
 <div id="application-to-single-cell-data" class="section level1">
 <h1>Application to Single-Cell Data</h1>
-<div id="integration-of-scrna-data" class="section level2">
-<h2>Integration of scRNA data</h2>
-<p>TODO</p>
-</div>
-<div id="integration-of-scrna-and-scatac-data" class="section level2">
-<h2>Integration of scRNA and scATAC data</h2>
-<p>TODO</p>
-</div>
-<div id="data-1" class="section level2">
-<h2>Data</h2>
-<p>We focus here on the implementation by Seurat. <span class="citation">(<a href="#ref-10.1038/nbt.4096" role="doc-biblioref"><em>2</em></a>, <a href="#ref-10.1016/j.cell.2019.05.031" role="doc-biblioref"><em>3</em></a>)</span></p>
-<p>Our input are the reference snRNA-seq dataset <span class="math inline">\(X\)</span> and the query snATAC-seq dataset <span class="math inline">\(Y\)</span>. For integration we only use the selected features, namely the union of the most highly variable features from each dataset as determined by the <code>vst</code>-method. (say we have about 4500 features).</p>
-<p>So we should note that the features for the snATAC-seq data are not the actual gene expression values but rather gene scores which are computed in ArchR by summing up the number of Tn5 insertion in and in proximity to a given gene body weighted by the inverse distance to that particular gene. (also per default ArchR arguments, we are also not using the raw gene scores but rather smoothed gene scores based on MAGIC (Markov Affinity-based Graph Imputation of Cells))</p>
-<p>For the notation below we will say that we have <span class="math inline">\(g = 1,...,N\)</span> features and <span class="math inline">\(X\)</span> has <span class="math inline">\(m=1,...,M\)</span> cells whereas <span class="math inline">\(Y\)</span> has <span class="math inline">\(p=1,...,P\)</span> cells such that: <span class="math inline">\(X \in \mathbb{R}^{N \times M}\)</span> and <span class="math inline">\(Y \in \mathbb{R}^{N \times P}\)</span>.</p>
-</div>
-<div id="cca-embedding" class="section level2">
-<h2>CCA Embedding</h2>
-<p>We can use CCA to compute a common low-dimensional embedding (<code>Seurat::RunCCA</code>), which is used to find pairs of cells (“TransferAnchors”) from each dataset that are similar.</p>
-<p>So we essentially do the same as shown above and use the loadings in the canonical correlation vectors as coordinates for the cells. So the cells lay in a space with as many dimensions as pairs of canonical correlation vectors we computed.</p>
-<p>However, we have to account for the fact that usually we have many more cells than features <span class="math inline">\(N &lt;&lt; (M+P)\)</span>. Therefore, the Seurat authors opted to use “diagonal penalized CCA,” where the covariance matrices are treated as diagonal matrices (setting all off-diagonal terms to 0) (What does this essentially do? Why does it help?). <span class="citation">(<a href="#ref-10.1093/biostatistics/kxp008" role="doc-biblioref"><em>1</em></a>)</span></p>
-<p>Further, not the full SVD is computed but rather k singular vectors and values are approximated using the augmented implicitly restarted Lanczos bidiagonalization algorithm which is implemented in <code>irlba</code>.</p>
-<p>Before proceeding we need to control for global differences in scale (what exactly does that mean?).</p>
-<ul>
-<li><p>Previously in Butler et al. (2018) <span class="citation">(<a href="#ref-10.1038/nbt.4096" role="doc-biblioref"><em>2</em></a>)</span>, the pairs of canonical vectors <span class="math inline">\(h_{X}^{(i)}\)</span> and <span class="math inline">\(h_{Y}^{(i)}\)</span> we aligned by computing a metagene using a linear combination of the 30 genes with the highest biweight midcorrelation (bicor) to <span class="math inline">\(h_{X}^{(i)}\)</span> and <span class="math inline">\(h_{Y}^{(i)}\)</span>. Now have each cell in <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> laying in a 30-dimensional space defined by the metagene. Lastly, to align the cells dynamic time warping (DTW) is used, which places a cell as close as possible to the most similar cell in the other dataset while maintaining the relative ordering of the cells. Now the same dynamic time warping is applied to the canonical correlation vectors leading a common aligned scale. This procedure is applied to all canonical vectors <span class="math inline">\(h_{X}^{(i)}\)</span> and <span class="math inline">\(h_{Y}^{(i)}\)</span> with <span class="math inline">\(i=1,...,k\)</span>.</p></li>
-<li><p>However, in Stuart et al. (2019) <span class="citation">(<a href="#ref-10.1016/j.cell.2019.05.031" role="doc-biblioref"><em>3</em></a>)</span> the procedure was simplified. To correct for global difference in scale between the two different datasets L2 normalization is used on the cell embeddings. Assuming that <span class="math inline">\(A_i\)</span> is the the coordinate vector for a cell <span class="math inline">\(i\)</span> such that <span class="math inline">\(|A| = k\)</span>, we normalize the coordinates using:</p></li>
-</ul>
+<p>Here will assume that we only have two datasets <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> which we would like to integrate.</p>
+<p>In the first setting (see here), we will assume that we have two scRNA-seq datasets which we would like to integrate. More specifically we want to adjust the count matrix of the second dataset <span class="math inline">\(Y\)</span>, such that the datasets are aligned.</p>
+<p>In the second case (see here), our task will be two integrate one scRNA-seq with an scATAC-seq datasets. More specifically, we want to transfer the counts from the scRNA-seq data as well as the celltype labels to the scATAC data, such that we can later on link peaks-to-genes via correlation of peak accessibility to gene expression.</p>
+<p>We focus here on the implementation by Seurat (V3). <span class="citation">(<a href="#ref-10.1038/nbt.4096" role="doc-biblioref"><em>2</em></a>, <a href="#ref-10.1016/j.cell.2019.05.031" role="doc-biblioref"><em>3</em></a>)</span> To that end, we will use CCA to create a common embedding for the reference <span class="math inline">\(X\)</span> and the query <span class="math inline">\(Y\)</span>, such that we can find cells in both datasets that corresponds to each other, which we call “Ankers.” How we use these “Anchors” to align the datasets will be further described in () and ().</p>
+<p>Using a similar notation as above, we say that <span class="math inline">\(X \in \mathbb{R}^{N \times M}\)</span> has <span class="math inline">\(N\)</span> features/genes and <span class="math inline">\(M\)</span> cells, whereas <span class="math inline">\(Y \in \mathbb{R}^{N \times P}\)</span> has <span class="math inline">\(P\)</span> cells and the same <span class="math inline">\(N\)</span> features.</p>
+<p>Given that we typcially use the highly variable genes, so about 2000-3000 features, the number of features <span class="math inline">\(N\)</span> is much smaller than the number of cells <span class="math inline">\(M\)</span>, <span class="math inline">\(P\)</span>:</p>
 <p><span class="math display">\[
-\hat{A} = \frac{A}{|A|_2}
+N &lt; M, \quad N &lt; P
 \]</span></p>
+<p>Thus the rank <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> is max <span class="math inline">\(N\)</span>, using the fact that <span class="math inline">\(rank(X^t X) = rank(X)\)</span>, we get that the max rank of <span class="math inline">\(S_X = X^T X \in \mathbb{R}^{M \times M}\)</span> is <span class="math inline">\(N\)</span> (as it is for <span class="math inline">\(Y\)</span>) (see for example here: <a href="https://math.stackexchange.com/questions/2807892/prove-that-textrankxtx-textrankx" class="uri">https://math.stackexchange.com/questions/2807892/prove-that-textrankxtx-textrankx</a>). This also means that <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> will not be invertible and thus we cannot used the solution as written above.</p>
+<p>In other terms the problem becomes underdetermined and we need some kind of regularization (but we need to make sure not to promote sparsity too much!). One way, is to delete all off-diagonal terms in <span class="math inline">\(S_X\)</span> and <span class="math inline">\(S_Y\)</span> (“diagonal penalized CCA”), such that we ensure that they are rank <span class="math inline">\(M\)</span> or rank <span class="math inline">\(P\)</span> respectively. <span class="citation">(<a href="#ref-10.1093/biostatistics/kxp008" role="doc-biblioref"><em>1</em></a>)</span>.</p>
+<p>If we scale <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> before, such that the variance of each column is 1, the scatter matrices <span class="math inline">\(S_X\)</span>, <span class="math inline">\(S_Y\)</span> will be scaled identity matrices.</p>
+<p><span class="math display">\[
+S_X = N * I \in \mathbb{R}^{M \times M}, \quad S_Y = N * I \in \mathbb{R}^{P \times P}
+\]</span></p>
+<p>Thus, the CCA objective becomes</p>
+<p><span class="math display">\[
+\begin{align*}
+\hat{h_X}^{(k)}, \hat{h_Y}^{(k)}
+= \arg\max_{h_X, h_Y} (Xh_x)^T(Yh_y) \quad s.t. &amp; \; \|h_x\|_2=1, \; \|h_y\|_2 = 1 \\
+&amp; (h_X^{(k)})^T(h_X^{(j)}) = 0 \; \forall \; j=1,...,k-1 \\
+&amp; (h_Y^{(k)})^T(h_Y^{(j)}) = 0 \; \forall \; j=1,...,k-1
+\end{align*}
+\]</span></p>
+<p>Which we can solve similarly via the SVD of <span class="math inline">\(X^T Y\)</span>:</p>
+<p><span class="math display">\[
+X^T Y = U \Sigma V^T \quad \text{with} \quad U \in \mathbb{R}^{M \times M}, \Sigma \in \mathbb{R}^{M \times P}, V \in \mathbb{R}^{P \times P}
+\]</span></p>
+<p>Given that <span class="math inline">\(h_X = S_X^{-1/2}\tilde{h_X}\)</span>, <span class="math inline">\(h_Y = S_Y^{-1/2}\tilde{h_Y}\)</span> and <span class="math inline">\(\tilde{h_X} = u_i\)</span>, <span class="math inline">\(\tilde{h_Y} = v_i\)</span>, the canonical vectors are given by</p>
+<p><span class="math display">\[
+h_X^{(i)} = u_i \quad \text{for } i=1,...,R \\
+h_Y^{(i)} = v_i \quad \text{for } i=1,...,R
+\]</span></p>
+<p>Furthermore, we do not have to solve the full SVD, but we can approximate the first <span class="math inline">\(k\)</span> singular values/vectors using the augmented implicitly restarted Lanczos bidiagonalization algorithm which is implemented in <code>irlba</code>.</p>
+<p>Lastly, we need to control for global differences in scale (what exactly does that mean?).</p>
+<p>Previously in Butler et al. (2018) <span class="citation">(<a href="#ref-10.1038/nbt.4096" role="doc-biblioref"><em>2</em></a>)</span>, the pairs of canonical vectors <span class="math inline">\(h_{X}^{(i)}\)</span> and <span class="math inline">\(h_{Y}^{(i)}\)</span> we aligned by computing a metagene using a linear combination of the 30 genes with the highest biweight midcorrelation (bicor) to <span class="math inline">\(h_{X}^{(i)}\)</span> and <span class="math inline">\(h_{Y}^{(i)}\)</span>. Now have each cell in <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> laying in a 30-dimensional space defined by the metagene. Lastly, to align the cells dynamic time warping (DTW) is used, which places a cell as close as possible to the most similar cell in the other dataset while maintaining the relative ordering of the cells. Now the same dynamic time warping is applied to the canonical correlation vectors leading a common aligned scale. This procedure is applied to all canonical vectors <span class="math inline">\(h_{X}^{(i)}\)</span> and <span class="math inline">\(h_{Y}^{(i)}\)</span> with <span class="math inline">\(i=1,...,k\)</span>.</p>
+<p>However, in Stuart et al. (2019) <span class="citation">(<a href="#ref-10.1016/j.cell.2019.05.031" role="doc-biblioref"><em>3</em></a>)</span> the procedure was simplified. To correct for global difference in scale between the two different datasets L2 normalization is used on the cell embeddings. Assuming that <span class="math inline">\(A_i\)</span> is the the coordinate vector for a cell <span class="math inline">\(i\)</span> such that <span class="math inline">\(|A| = k\)</span>, we normalize the coordinates using:</p>
+</div>
+<div id="integration-of-2-scrna-datasets" class="section level1">
+<h1>Integration of 2 scRNA datasets</h1>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>We will integrate two cov19 samples.</p>
+<pre class="r"><code>rna_list &lt;- readRDS(&quot;cov19_balf_gex_qc_output/2022-04-10-11-26_rna_list_filtered.RDS&quot;) %&gt;%
+   `[`(., c(&quot;HC1&quot;, &quot;HC2&quot;, &quot;S1&quot;, &quot;S2&quot;))</code></pre>
+<p>Add the sample names as prefix.</p>
+<pre class="r"><code>rna_list &lt;- purrr::imap(rna_list, function(mtx, smp) {
+   colnames(mtx) &lt;- paste0(smp, &quot;_&quot;, colnames(mtx))
+   mtx })</code></pre>
+<p>Next we will remove all genes which have 0 variance in at least one sample.</p>
+<pre class="r"><code>genes_to_remove &lt;- 
+   purrr::map_dfc(rna_list, function(mtx) {
+   sparseMatrixStats::rowVars(mtx)
+}) %&gt;%
+   mutate(across(everything(), function(x) x == 0)) %&gt;%
+   apply(., 1, any) %&gt;%
+   `[`(rownames(rna_list$HC1), .)
+genes_to_remove</code></pre>
+<pre><code>##  [1] &quot;RAD54L&quot;     &quot;BNIPL&quot;      &quot;WNT9A&quot;      &quot;ANKRD20A8P&quot; &quot;LEF1&quot;      
+##  [6] &quot;SERPINB9P1&quot; &quot;FBXL13&quot;     &quot;STRIP2&quot;     &quot;SCARA3&quot;     &quot;ABO&quot;       
+## [11] &quot;CUBN&quot;       &quot;AC079174.2&quot; &quot;FITM1&quot;      &quot;NFATC4&quot;     &quot;MCTP2&quot;     
+## [16] &quot;ERN2&quot;       &quot;CX3CL1&quot;     &quot;PIEZO2&quot;     &quot;CERS4&quot;</code></pre>
+<pre class="r"><code>rna_list &lt;- purrr::map(rna_list, ~ .x[!rownames(.x) %in% genes_to_remove,])</code></pre>
+<p>Defining some helper functions.</p>
+<pre class="r"><code>log_norm &lt;- function(mtx, sf=1e4) {
+   log1p(
+      t( t(mtx) / sparseMatrixStats::colSums2(mtx) ) * sf
+   )
+}
+
+hvg_vst_method &lt;- function(mtx, plotting=F) {
+   df &lt;- tibble(gene = rownames(mtx), 
+                mean = Matrix::rowMeans(mtx),
+                var = sparseMatrixStats::rowVars(mtx)) %&gt;%
+      mutate(log10.mean = log10(mean), 
+             log10.var = log10(var)) %&gt;%
+     filter(is.finite(log10.var))
+   l.fit &lt;- stats::loess(formula = log10.var ~ log10.mean, data = df, span = 0.3)
+   df &lt;- df %&gt;%
+     mutate(pred.log10.var = predict(l.fit, log10.mean)) %&gt;%
+     mutate(pred.var = 10^pred.log10.var)
+   if (plotting) {
+      p &lt;- 
+         ggplot() +
+        geom_point(aes(x=df$log10.mean, y=df$log10.var),
+                   size = 0.2)  +
+        geom_line(aes(x=df$log10.mean, y=l.fit$fitted), color = &quot;blue&quot;) +
+        labs(x = &quot;log10 Mean&quot;, y = &quot;log10 Variance&quot;, 
+             title = &quot;Loess Fit&quot;) +
+        scale_color_manual(values = c(&quot;TRUE&quot; = &quot;forestgreen&quot;, &quot;FALSE&quot; = &quot;red&quot;)) +
+        coord_equal()
+      print(p)
+   }
+   gene_mean_subtracted &lt;- mtx - df$mean
+   exp_var_divided &lt;- gene_mean_subtracted / (df$pred.var)^0.5
+   clip &lt;- ncol(mtx)^0.5
+   exp_var_divided[exp_var_divided &gt; clip] &lt;- clip
+   exp_var_divided &lt;- Matrix::Matrix(exp_var_divided, sparse=TRUE)
+   
+   df &lt;- df %&gt;%
+     mutate(std.var = sparseMatrixStats::rowVars(exp_var_divided))
+   if (plotting) {
+      p &lt;- 
+         df %&gt;%
+           ggplot() +
+           geom_point(aes(x=log10.mean, y=std.var),
+                      size = 0.2, alpha = 0.5) +
+           labs(x = &quot;log10 Mean Expression&quot;, y = &quot;Standardized Variance&quot;, 
+                title = &quot;Standardized Variance&quot;) +
+           scale_color_manual(values = c(&quot;TRUE&quot; = &quot;forestgreen&quot;, &quot;FALSE&quot; = &quot;red&quot;)) +
+           guides(colour = guide_legend(override.aes = list(size = 2)))
+      print(p)
+   }
+   df
+}</code></pre>
+<p>Get the union of the 1500 most highly variable genes from both samples determined by the <code>vst-method</code>.</p>
+<pre class="r"><code>hvg &lt;- purrr::map(rna_list, function(mtx) {
+   df &lt;- hvg_vst_method(mtx) %&gt;%
+      dplyr::slice_max(std.var, n=1500) %&gt;%
+      pull(gene)
+}) %&gt;%
+   unlist() %&gt;%
+   unique()
+length(hvg)</code></pre>
+<pre><code>## [1] 2853</code></pre>
+<p>Now we will check for batch effects by looking at the first principal components and a UMAP.</p>
+<pre class="r"><code>pca &lt;- do.call(cbind, rna_list) %&gt;%
+   log_norm() %&gt;% 
+   .[hvg,] %&gt;%
+   t() %&gt;%
+   irlba::prcomp_irlba(., n=30, retx=TRUE,
+                       center=TRUE, scale. = TRUE)
+plot(pca$sdev)</code></pre>
+<p><img src="integration_cca_2_files/figure-html/unnamed-chunk-24-1.png" width="672" /></p>
+<pre class="r"><code>ggplot() +
+   geom_point(aes(x=pca$x[,1], y=pca$x[,2],
+                  color = str_extract(colnames(do.call(cbind, rna_list)),
+                                     &quot;S[0-9]|HC[0-9]&quot;)),
+              size=0.1, alpha=0.5) +
+   labs(color=&quot;Sample&quot;)</code></pre>
+<p><img src="integration_cca_2_files/figure-html/unnamed-chunk-25-1.png" width="672" /></p>
+<p>And what about the umap?</p>
+<pre class="r"><code>umap &lt;- uwot::umap(pca$x)</code></pre>
+<pre><code>## Found more than one class &quot;dist&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
+<pre><code>## Also defined by &#39;spam&#39;</code></pre>
+<pre><code>## Found more than one class &quot;dist&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
+<pre><code>## Also defined by &#39;spam&#39;</code></pre>
+<pre class="r"><code>ggplot() +
+   geom_point(aes(x=umap[,1], y=umap[,2],
+                  color = str_extract(colnames(do.call(cbind, rna_list)),
+                                     &quot;S[0-9]|HC[0-9]&quot;)),
+              size=0.1, alpha=0.1) +
+   labs(color=&quot;Sample&quot;) +
+   guides(color = guide_legend(override.aes = list(size = 2,
+                                                   alpha=1)))</code></pre>
+<p><img src="integration_cca_2_files/figure-html/unnamed-chunk-26-1.png" width="672" /></p>
+<p>So we do see a very strong batch effect and we might first integrate the two healthy samples.</p>
+<pre class="r"><code>pca &lt;- do.call(cbind, rna_list[c(&quot;HC1&quot;, &quot;HC2&quot;)]) %&gt;%
+   log_norm() %&gt;% 
+   .[hvg,] %&gt;%
+   t() %&gt;%
+   irlba::prcomp_irlba(., n=30, retx=TRUE,
+                       center=TRUE, scale. = TRUE)
+plot(pca$sdev)</code></pre>
+<p><img src="integration_cca_2_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
+<pre class="r"><code>ggplot() +
+   geom_point(aes(x=pca$x[,1], y=pca$x[,2],
+                  color = str_extract(colnames(do.call(cbind, rna_list[c(&quot;HC1&quot;, &quot;HC2&quot;)])), &quot;S[0-9]|HC[0-9]&quot;)),
+              size=0.1, alpha=0.5) +
+   labs(color=&quot;Sample&quot;)</code></pre>
+<p><img src="integration_cca_2_files/figure-html/unnamed-chunk-28-1.png" width="672" /></p>
+<p>And what about the umap?</p>
+<pre class="r"><code>umap &lt;- uwot::umap(pca$x)</code></pre>
+<pre><code>## Found more than one class &quot;dist&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
+<pre><code>## Also defined by &#39;spam&#39;</code></pre>
+<pre><code>## Found more than one class &quot;dist&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
+<pre><code>## Also defined by &#39;spam&#39;</code></pre>
+<pre class="r"><code>ggplot() +
+   geom_point(aes(x=umap[,1], y=umap[,2],
+                  color = str_extract(colnames(do.call(cbind, rna_list[c(&quot;HC1&quot;, &quot;HC2&quot;)])),
+                                     &quot;S[0-9]|HC[0-9]&quot;)),
+              size=0.1, alpha=0.1) +
+   labs(color=&quot;Sample&quot;) +
+   guides(color = guide_legend(override.aes = list(size = 2,
+                                                   alpha=1)))</code></pre>
+<p><img src="integration_cca_2_files/figure-html/unnamed-chunk-29-1.png" width="672" /></p>
+<p>We might also check where we have which genes.</p>
+<pre class="r"><code>ggplot() +
+   geom_point(aes(x=umap[,1], y=umap[,2],
+                  color = do.call(cbind, rna_list[c(&quot;HC1&quot;, &quot;HC2&quot;)])[&quot;CD68&quot;,] &gt; 5),
+              size=0.1, alpha=1) +
+   labs(color=&quot;CD68 Expressedxpressed&quot;)</code></pre>
+<p><img src="integration_cca_2_files/figure-html/unnamed-chunk-30-1.png" width="672" /></p>
+</div>
+<div id="cca" class="section level2">
+<h2>CCA</h2>
+<p>We will first try to integrate the two healthy samples above (HC1 and HC2).</p>
+<p>We will use the highly variable genes as computed above.</p>
+<pre class="r"><code>length(hvg)</code></pre>
+<pre><code>## [1] 2853</code></pre>
+<p>Center and scale the matrices.</p>
+<pre class="r"><code>#X &lt;- rna_list$HC1[hvg,]
+#Y &lt;- rna_list$HC2[hvg,]
+compute_cca &lt;- function(X, Y, k=30, scale=TRUE) {
+   
+   # centering and scaling
+   X_centered &lt;- MatrixExtra::as.csc.matrix( t( t(X) - Matrix::colMeans(X) ) )
+   Y_centered &lt;- MatrixExtra::as.csc.matrix( t( t(Y) - Matrix::colMeans(Y) ) )
+   
+   if (scale) {
+      X_centered &lt;- t( t(X_centered) /  sparseMatrixStats::colSds(X_centered) )
+      Y_centered &lt;- t( t(Y_centered) /  sparseMatrixStats::colSds(Y_centered) )
+   }
+   
+   # compute K and its singular value decomposition
+   K = t(X_centered) %*% (Y_centered)
+   
+   svd_res &lt;- irlba::svdr(x=K, k=k)
+   
+   return(list(cor = svd_res$d, xcoef = svd_res$u, ycoef = svd_res$v))
+}</code></pre>
+<pre class="r"><code>cca.out &lt;- compute_cca(rna_list$HC1[hvg,], rna_list$HC2[hvg,])</code></pre>
+<pre class="r"><code>cca.out$cor %&gt;% length</code></pre>
+<pre><code>## [1] 30</code></pre>
+<pre class="r"><code>cca.out$xcoef %&gt;% dim</code></pre>
+<pre><code>## [1] 7342   30</code></pre>
+<pre class="r"><code>cca.out$ycoef %&gt;% dim</code></pre>
+<pre><code>## [1] 7320   30</code></pre>
+<p>Lastly we need to apply the L2 penalty to each row (i.e. the embedding of a cell).</p>
+<pre class="r"><code>embed_x &lt;- cca.out$xcoef / sqrt(Matrix::rowSums(cca.out$xcoef^2))
+embed_y &lt;- cca.out$ycoef / sqrt(Matrix::rowSums(cca.out$ycoef^2))
+rownames(embed_x) &lt;- colnames(rna_list$HC1[hvg,])
+rownames(embed_y) &lt;- colnames(rna_list$HC2[hvg,])</code></pre>
+<p>Let’s compute a umap and look at the data. And they look pretty aligned!</p>
+<pre class="r"><code>umap &lt;- uwot::umap(rbind(embed_x, embed_y))</code></pre>
+<pre><code>## Found more than one class &quot;dist&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
+<pre><code>## Also defined by &#39;spam&#39;</code></pre>
+<pre><code>## Found more than one class &quot;dist&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
+<pre><code>## Also defined by &#39;spam&#39;</code></pre>
+<pre class="r"><code>ggplot() +
+   geom_point(aes(x=umap[,1], y=umap[,2],
+                  color = str_extract(rownames(rbind(embed_x, embed_y)),
+                                      &quot;HC[0-9]|M[0-9]|S[0-9]&quot;)),
+              size=0.2, alpha=0.2) +
+   labs(color=&quot;Sample&quot;) +
+   guides(color = guide_legend(override.aes = list(size = 2,
+                                                   alpha=1)))</code></pre>
+<p><img src="integration_cca_2_files/figure-html/unnamed-chunk-36-1.png" width="672" /></p>
 </div>
 <div id="transfer-anchors" class="section level2">
 <h2>Transfer Anchors</h2>
@@ -867,29 +1099,280 @@ tibble::tribble(
    geom_point(aes(x=x, y=y, color=name), size=10) +
    lims(x=c(0,10), y=c(0,10)) +
    labs(color=&quot;Cell&quot;)</code></pre>
-<p><img src="integration_cca_files/figure-html/unnamed-chunk-18-1.png" width="576" /></p>
+<p><img src="integration_cca_2_files/figure-html/unnamed-chunk-37-1.png" width="576" /></p>
+<p>To do that we will first construct a nearest neighbor graph. Therefore, we will run <code>RANN::nn2</code> two times: First we get for each cell in <span class="math inline">\(X\)</span>, the 5 closest cells in <span class="math inline">\(Y\)</span> and then the other way around)</p>
+<pre class="r"><code>nn1 &lt;- RANN::nn2(embed_y, embed_x, k=10)
+nn2 &lt;- RANN::nn2(embed_x, embed_y, k=10)
+nrow(embed_x) == nrow(nn1$nn.idx)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>nrow(embed_y) == nrow(nn2$nn.idx)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<p>Construct the graph. Since we omit the filtering step, we will set <code>k=2</code>, meaning two cells are considered anchors if they are mutual nearest neighbor when we only consider the two nearest neighbors.</p>
+<pre class="r"><code>k &lt;- 2
+gr &lt;- igraph::graph(c(), n =nrow(nn1$nn.idx) + nrow(nn2$nn.idx))
+for(i in 1:k) {
+   gr &lt;- igraph::add_edges(
+      gr, as.vector(rbind(1:nrow(nn1$nn.idx), nn1$nn.idx[,i] + nrow(nn1$nn.idx)))
+      )
+}
+
+for(i in 1:k) {
+   gr &lt;- igraph::add_edges(
+      gr, as.vector(rbind((1:nrow(nn2$nn.idx)) + nrow(nn1$nn.idx),
+                         nn2$nn.idx[,i])))
+}
+gr &lt;- igraph::as.undirected(gr, &quot;mutual&quot; )
+anchors &lt;- igraph::as_edgelist(gr)
+#anchors[,2] &lt;- anchors[,2] - nrow(nn1$nn.idx)
+dim(anchors)</code></pre>
+<pre><code>## [1] 6116    2</code></pre>
+<pre class="r"><code>head(anchors)</code></pre>
+<pre><code>##      [,1] [,2]
+## [1,] 1302 7343
+## [2,]  359 7346
+## [3,] 4530 7347
+## [4,] 3829 7348
+## [5,] 3621 7349
+## [6,] 5622 7349</code></pre>
+<details>
+<summary>
+How does the graph construction work?
+</summary>
+<ol style="list-style-type: decimal">
+<li>We initialize a graph with as many nodes as cells and no edges between them.</li>
+</ol>
+<pre class="r"><code>g &lt;- igraph::graph(c(), n =nrow(nn1$nn.idx) + nrow(nn2$nn.idx))
+g</code></pre>
+<pre><code>## IGRAPH 98a1e25 D--- 14662 0 -- 
+## + edges from 98a1e25:</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>Now we add edges for the <span class="math inline">\(k\)</span> nearest neighbors in <span class="math inline">\(Y\)</span> for each cell in <span class="math inline">\(X\)</span>. We just need to take care of the indices.</li>
+</ol>
+<pre class="r"><code>k &lt;- 2
+for(i in 1:k) {
+   g &lt;- igraph::add_edges(
+      g, as.vector(rbind(1:nrow(nn1$nn.idx), nn1$nn.idx[,i] + nrow(nn1$nn.idx)))
+      )
+}
+for(i in 1:k) {
+   g &lt;- igraph::add_edges(
+      g, as.vector(rbind((1:nrow(nn2$nn.idx)) + nrow(nn1$nn.idx),
+                         nn2$nn.idx[,i])))
+}</code></pre>
+<ul>
+<li>However, igraph requires us to provide the edges in a weird format. So for <code>i=</code>, we get:</li>
+</ul>
+<pre class="r"><code>i &lt;- 1
+as.vector(rbind(1:nrow(nn1$nn.idx), nn1$nn.idx[,i] + nrow(nn1$nn.idx))) %&gt;%
+   head</code></pre>
+<pre><code>## [1]    1 7942    2 9273    3 9306</code></pre>
+<ul>
+<li>This means we will add an edge from the 1. node to the 9960. node, since the first NN for the first cell in <span class="math inline">\(X\)</span> is the 600. cell from <span class="math inline">\(Y\)</span>.</li>
+</ul>
+<pre class="r"><code>nn1$nn.idx[1:3, 1:5]</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5]
+## [1,]  600 2618   34 4225  876
+## [2,] 1931 7273  309 6304 4620
+## [3,] 1964 2325 2982 1946 6396</code></pre>
+<ul>
+<li>After adjusting the indices by simply adding the number of cells in <span class="math inline">\(X\)</span>, we get:</li>
+</ul>
+<pre class="r"><code>nn1$nn.idx[1:3, 1:5] + nrow(nn1$nn.idx)</code></pre>
+<pre><code>##      [,1]  [,2]  [,3]  [,4]  [,5]
+## [1,] 7942  9960  7376 11567  8218
+## [2,] 9273 14615  7651 13646 11962
+## [3,] 9306  9667 10324  9288 13738</code></pre>
+<ul>
+<li><p>Which is exactly what we see in the “edge list” above.</p></li>
+<li><p>Once the graph is constructed, we transform the graph to be undirected and only keep edges that were present in both directions “mututal.” Whi</p></li>
+</ul>
+<pre class="r"><code>print(paste0(&quot;The number of edges before: &quot;, igraph::gsize(g)))</code></pre>
+<pre><code>## [1] &quot;The number of edges before: 29324&quot;</code></pre>
+<pre class="r"><code>g &lt;- igraph::as.undirected(g, mode=&quot;mutual&quot;)
+print(paste0(&quot;The number of edges after:  &quot;, igraph::gsize(g)))</code></pre>
+<pre><code>## [1] &quot;The number of edges after:  6116&quot;</code></pre>
+<hr />
+</details>
 <p>After finding these integration anchors in the low-dimensional space, they are filtered based on the high-dimensional original space. In particular the 200 (<code>max.features = 200</code>) most informative features for the CCA (i.e. features with the highest loading) are used for filtering. So for each query cell of an anchor cell pair the corresponding reference cell must be among the 200 (<code>k.filter = 200</code>) nearest neighbors in this “high-dimensional space.”</p>
+<p>We will omit this filtering step for now.</p>
 <p>After filtering the integration anchors are scored based on the overlap on their neighborhood. In particular for both the reference and the query cell the 30 (<code>k.score = 30</code>) nearest neighbors are determined in the same dataset (within-dataset neighbors) and the other-dataset using the low-dimensional embedding. Thus, we have 4 matrices, namely a) the NN of the reference cell from the reference dataset, b) the NN of the reference cell from the query dataset, c) the NN of the query cell from the reference datset, d) the NN of the query cell from the query dataset. Now we determine the overlap between a) and c), as well as b) and d). We combine the overlap measures and call it the score (“how big is the overlap of the neighborhoods”). Furthermore, the effect of outliers is reduced by using the 0.01 and 0.9 quantiles to rescale the anchor scores to a range of 0 to 1.</p>
+<pre class="r"><code>k.score &lt;- 30
+nnA &lt;- RANN::nn2(embed_x, k=k.score)
+nnB &lt;- RANN::nn2(embed_y, embed_x, k=k.score)
+nnC &lt;- RANN::nn2(embed_y, k=k.score)
+nnD &lt;- RANN::nn2(embed_x, embed_y, k=k.score)
+
+# adjusting the indices
+nnB$nn.idx &lt;- nnB$nn.idx + nrow(nnA$nn.idx)
+nnC$nn.idx &lt;- nnC$nn.idx + nrow(nnA$nn.idx)</code></pre>
+<pre class="r"><code>scores &lt;- vector(mode=&quot;numeric&quot;, length=nrow(anchors))
+for (i in 1:nrow(anchors)) {
+   anchor_1 &lt;- anchors[i,1]
+   anchor_2 &lt;- anchors[i,2]
+   l1 &lt;- length(dplyr::intersect(
+      nnA$nn.idx[anchor_1,],
+      nnD$nn.idx[anchor_2-nrow(nnA$nn.idx),]
+   ))
+   l2 &lt;- length(dplyr::intersect(
+      nnB$nn.idx[anchor_1,],
+      nnC$nn.idx[anchor_2-nrow(nnA$nn.idx),]
+   ))
+   scores[i] &lt;- l1 + l2
+}
+# &quot;quantile normalization as it is implemented in Seurat!&quot;
+scores_rescaled &lt;- 
+   (scores - quantile(scores, 0.01)) / 
+   (quantile(scores, 0.9) - quantile(scores, 0.01))
+scores_rescaled[scores_rescaled &gt; 1] &lt;-  1
+scores_rescaled[scores_rescaled &lt; 0] &lt;- 0
+hist(scores)</code></pre>
+<p><img src="integration_cca_2_files/figure-html/unnamed-chunk-47-1.png" width="672" /></p>
+<pre class="r"><code>hist(scores_rescaled)</code></pre>
+<p><img src="integration_cca_2_files/figure-html/unnamed-chunk-47-2.png" width="672" /></p>
 </div>
-<div id="transfer-data" class="section level2">
-<h2>Transfer Data</h2>
-<div id="weight-matrix" class="section level3">
-<h3>Weight Matrix</h3>
-<p>Then we can use the <code>TransferData</code> function from <code>Seurat</code> to for example impute the RNA-PCA coordinates in the ATAC-seq data. But how exactly does this work?</p>
-<p>Having the anchor cell pairs, we construct a weight matrix <span class="math inline">\(W\)</span> which described the association between each query cell <span class="math inline">\(c\)</span> and each anchor pair <span class="math inline">\(i\)</span>.</p>
-<p>We start by constructing the weighted distance matrix for each query cell <span class="math inline">\(c\)</span> and each anchor pair <span class="math inline">\(i\)</span> (meaning the query cell from this cell pair). We use the distance to the <code>k.weight</code> nearest anchor query cell as well as the anchor score <span class="math inline">\(S_i\)</span> to weight all the distances.</p>
+<div id="weight-matrix" class="section level2">
+<h2>Weight Matrix</h2>
+<p>To correct the expression matrices of <span class="math inline">\(Y\)</span>, we first need to construct the weight matrix <span class="math inline">\(W\)</span>, which described the association between each query cell <span class="math inline">\(c\)</span> and each anchor pair <span class="math inline">\(i\)</span>.</p>
+<p>We start by constructing the weighted distance matrix for each query cell <span class="math inline">\(c\)</span> and the <code>k.weight</code> closest anchor pairs (indexed by <span class="math inline">\(i\)</span>) (meaning the query cell from this cell pair). We use the distance to the <code>k.weight</code> nearest anchor query cell as well as the anchor score <span class="math inline">\(S_i\)</span> to weight all the distances. We use the distances based on the pca of the query dataset.</p>
+<pre class="r"><code>pca_Y &lt;- rna_list$HC2 %&gt;%
+   log_norm() %&gt;%
+   .[hvg, ] %&gt;%
+   t() %&gt;%
+   irlba::prcomp_irlba(., n=30, center = TRUE, scale. = TRUE) %&gt;%
+   .[[&quot;x&quot;]]
+dim(pca_Y)</code></pre>
+<pre><code>## [1] 7320   30</code></pre>
 <p><span class="math display">\[
 D_{c, i}=\left(1-\frac{\operatorname{dist}\left(c, a_{i}\right)}{\operatorname{dist}\left(c, a_{k . w e i g h t}\right)}\right) S_{a_{i}}
 \]</span></p>
-<p>Assuming we have the weight matrix, we continue by applying a Gaussian kernel. So the weights decay according to a “Gaussian Curve” with increasing distance.</p>
+<p>We should be able to compute the distances in a vectorized manner</p>
+<pre class="r"><code>k.weight = 15
+query &lt;- pca_Y
+ref &lt;- pca_Y[anchors[,2] - ncol(rna_list$HC1), ]
+dim(query)</code></pre>
+<pre><code>## [1] 7320   30</code></pre>
+<pre class="r"><code>dim(ref)</code></pre>
+<pre><code>## [1] 6116   30</code></pre>
+<pre class="r"><code>dists &lt;- as.matrix(pdist::pdist(query, ref))
+dim(dists)</code></pre>
+<pre><code>## [1] 7320 6116</code></pre>
+<p>However, we are actually only interested in the <code>k.weight</code> nearest anchor cells for each query cell, so we should set all the values for the other anchors 0.</p>
+<p>One easy way would be to get the 30 smallest value in each row, and then set all values larger than that to 0</p>
+<pre class="r"><code>for (i in 1:nrow(dists)) {
+   if (i %% 1000 == 0) print(i)
+   cutoff &lt;- sort(dists[i,],partial=k.weight)[k.weight]
+   dists[i, ] &lt;- dists[i, ] / cutoff
+   dists[i, dists[i, ] &gt; 1] &lt;- 1
+   dists[i, ] &lt;- 1 - dists[i, ]
+}</code></pre>
+<pre><code>## [1] 1000
+## [1] 2000
+## [1] 3000
+## [1] 4000
+## [1] 5000
+## [1] 6000
+## [1] 7000</code></pre>
+<p>Now we multiply with the anchor scores as diagonal matrix. So we basically scale each column corresponding to an anchor by the anchor score.</p>
+<pre class="r"><code>weights &lt;- dists %*% diag(scores_rescaled)</code></pre>
+<pre class="r"><code>weights[1:6, 1:6]</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5] [,6]
+## [1,] 0.12    0 0.00 0.00    0    0
+## [2,] 0.00    0 0.00 0.00    0    0
+## [3,] 0.00    0 0.00 0.00    0    0
+## [4,] 0.00    1 0.00 0.00    0    0
+## [5,] 0.00    0 0.28 0.00    0    0
+## [6,] 0.00    0 0.00 0.16    0    0</code></pre>
+<pre class="r"><code>dists[1:6, 1:6]</code></pre>
+<pre><code>##      [,1] [,2] [,3] [,4] [,5] [,6]
+## [1,]    1    0    0    0    0    0
+## [2,]    0    0    0    0    0    0
+## [3,]    0    0    0    0    0    0
+## [4,]    0    1    0    0    0    0
+## [5,]    0    0    1    0    0    0
+## [6,]    0    0    0    1    0    0</code></pre>
+<pre class="r"><code>scores_rescaled[1:6]</code></pre>
+<pre><code>## [1] 0.12 1.00 0.28 0.16 0.60 0.32</code></pre>
+<p>Now we apply a Gaussian kernel. So the weights decay according to a “Gaussian Curve” with increasing distance.</p>
 <p><span class="math display">\[
 \tilde{D}_{c, i}=1-\mathrm{e}^{\frac{-D_{c, i}}{(2 / s d)^{2}}}
 \]</span></p>
-<p>where sd is the Gaussian kernel bandwidth, set to 1 by default. Finally, we normalize across all k.weight anchors:</p>
+<pre class="r"><code>bandwidth &lt;- 1
+weights_corrected &lt;- 1 - exp(
+   - weights/
+      (2/bandwidth)^2
+   )
+weights_corrected[1:6, 1:6]</code></pre>
+<pre><code>##            [,1]      [,2]       [,3]       [,4] [,5] [,6]
+## [1,] 0.02955447 0.0000000 0.00000000 0.00000000    0    0
+## [2,] 0.00000000 0.0000000 0.00000000 0.00000000    0    0
+## [3,] 0.00000000 0.0000000 0.00000000 0.00000000    0    0
+## [4,] 0.00000000 0.2211992 0.00000000 0.00000000    0    0
+## [5,] 0.00000000 0.0000000 0.06760618 0.00000000    0    0
+## [6,] 0.00000000 0.0000000 0.00000000 0.03921056    0    0</code></pre>
+<p>where sd is the Gaussian kernel bandwidth, set to 1 by default.</p>
+<p>Finally, we normalize across all k.weight anchors, meaning we divide each row by the row sum.</p>
 <p><span class="math display">\[
 W_{c, i}=\frac{\tilde{D}_{c, i}}{\sum_{1}^{j=k . \text { weight }} \tilde{D}_{c, j}}
 \]</span></p>
+<pre class="r"><code>W &lt;- weights_corrected / Matrix::rowSums(weights_corrected)
+W[1:6, 1:6]</code></pre>
+<pre><code>##           [,1]      [,2]      [,3]      [,4] [,5] [,6]
+## [1,] 0.3932271 0.0000000 0.0000000 0.0000000    0    0
+## [2,] 0.0000000 0.0000000 0.0000000 0.0000000    0    0
+## [3,] 0.0000000 0.0000000 0.0000000 0.0000000    0    0
+## [4,] 0.0000000 0.3708784 0.0000000 0.0000000    0    0
+## [5,] 0.0000000 0.0000000 0.3609311 0.0000000    0    0
+## [6,] 0.0000000 0.0000000 0.0000000 0.2098016    0    0</code></pre>
+<pre class="r"><code>dim(W)</code></pre>
+<pre><code>## [1] 7320 6116</code></pre>
 </div>
+<div id="correct-expression" class="section level2">
+<h2>Correct Expression</h2>
+<p>We first need to compute matrix B, where each column corresponds to the difference between the expression vectors of <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> for the cells of anchor pair <span class="math inline">\(i\)</span>.</p>
+<p>I am just not sure whether we should use the counts or the log normalized counts here? I guess normalized makes more sense as we need to account for differences in the library size.</p>
+<pre class="r"><code>X &lt;- rna_list$HC1 %&gt;% log_norm()
+Y &lt;- rna_list$HC2 %&gt;% log_norm()
+B &lt;- Y[, anchors[,2] - ncol(X)] - X[, anchors[,1]]
+dim(B)</code></pre>
+<pre><code>## [1] 13523  6116</code></pre>
+<p>Now we can compute the transformation matrix <span class="math inline">\(C = BW^T\)</span>:</p>
+<pre class="r"><code>C &lt;- B %*% t(W)
+dim(C)</code></pre>
+<pre><code>## [1] 13523  7320</code></pre>
+<p>And lastly we subtract the transformation matrix <span class="math inline">\(C\)</span> from <span class="math inline">\(Y\)</span> to get the integrated expression matrix <span class="math inline">\(\hat{Y} = Y - C\)</span></p>
+<pre class="r"><code>Y_hat &lt;- Y - C</code></pre>
+<p>Now let’s do again a pca on <span class="math inline">\([X, \hat{Y}]\)</span> and check whether we see a batch effect.</p>
+<pre class="r"><code>pca_test &lt;- irlba::prcomp_irlba(
+   t(cbind(X, Y_hat)[hvg, ]), n = 30
+)
+ggplot() +
+   geom_point(aes(x=pca_test$x[,1], y=pca_test$x[,2],
+                  color = str_extract(colnames(do.call(cbind, rna_list[c(&quot;HC1&quot;, &quot;HC2&quot;)])), &quot;S[0-9]|HC[0-9]&quot;)),
+              size=0.1, alpha=0.5) +
+   labs(color=&quot;Sample&quot;)</code></pre>
+<p><img src="integration_cca_2_files/figure-html/unnamed-chunk-59-1.png" width="672" /></p>
+<p>And what about the UMAP?</p>
+<pre class="r"><code>umap_test &lt;- uwot::umap(pca_test$x)</code></pre>
+<pre><code>## Found more than one class &quot;dist&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
+<pre><code>## Also defined by &#39;spam&#39;</code></pre>
+<pre><code>## Found more than one class &quot;dist&quot; in cache; using the first, from namespace &#39;BiocGenerics&#39;</code></pre>
+<pre><code>## Also defined by &#39;spam&#39;</code></pre>
+<pre class="r"><code>ggplot() +
+   geom_point(aes(x=umap_test[,1], y=umap_test[,2],
+                  color = str_extract(rownames(rbind(embed_x, embed_y)),
+                                      &quot;HC[0-9]|M[0-9]|S[0-9]&quot;)),
+              size=0.2, alpha=0.2) +
+   labs(color=&quot;Sample&quot;) +
+   guides(color = guide_legend(override.aes = list(size = 2,
+                                                   alpha=1)))</code></pre>
+<p><img src="integration_cca_2_files/figure-html/unnamed-chunk-60-1.png" width="672" /></p>
+</div>
+</div>
+<div id="integration-of-scrna-and-scatac-data" class="section level1">
+<h1>Integration of scRNA and scATAC data</h1>
+<p>TODO</p>
+<div id="transfer-data" class="section level2">
+<h2>Transfer Data</h2>
 <div id="discrete-data" class="section level3">
 <h3>Discrete Data</h3>
 <p>For cell metadata transfer, we create a binary classification matrix <span class="math inline">\(L\)</span> containing the classification information for each anchor cell in the reference dataset. Specifically, each row in <span class="math inline">\(L\)</span> corresponds to a possible class and each column corresponds to a reference anchor.</p>
@@ -912,153 +1395,11 @@ P_{f}=F W^{T}
 <p>This returns a predicted expression matrix for each feature (row) in <span class="math inline">\(F\)</span> for each cell in the query dataset.</p>
 </div>
 </div>
-<div id="toy-dataset" class="section level2">
-<h2>Toy Dataset</h2>
-<p>For illustration purposes, we will create a much smaller mock example.</p>
-<p>For now I simply created the gene expression matrix <span class="math inline">\(X\)</span> by sampling from <code>0:5</code> with decreasing probabilities. The same is done for the gene score matrix <span class="math inline">\(Y\)</span> with the addition that some cells are simply taken from <span class="math inline">\(X\)</span>. These should be our integration anchors in the end</p>
-<p>It would be fun to actually simulate some kind of latent space which we use to create the matrices in some kind of generative process.</p>
-<pre class="r"><code>set.seed(42)
-
-get_count_matrix &lt;- function(ngenes, ncells, cell_prefix=&quot;c&quot;) {
-   mtx &lt;- matrix(sample(x=0:5, prob=c(0.5, 0.2, 0.1, 0.1, 0.05, 0.05), 
-                        size=ngenes*ncells, replace = TRUE),
-                 nrow = ngenes, ncol = ncells)
-   rownames(mtx) &lt;- paste0(&quot;gene_&quot;, 1:nrow(mtx))
-   colnames(mtx) &lt;- paste0(cell_prefix, &quot;_&quot;, 1:ncol(mtx))
-   return(mtx)
-}
-
-X &lt;- get_count_matrix(6, 10, cell_prefix=&quot;c&quot;)
-
-Y &lt;- get_count_matrix(6, 6, cell_prefix=&quot;d&quot;) %&gt;%
-   cbind(X[, sample(x=1:ncol(X), size=3, replace=TRUE)]) %&gt;%
-   .[, sample(1:ncol(.))] %&gt;% # shuffle
-   `colnames&lt;-`(., paste0(&quot;d_&quot;, 1:ncol(.))) # set colnames
-
-p1 &lt;- ComplexHeatmap::pheatmap(
-   X, 
-   cluster_rows = F, cluster_cols = F,
-   display_numbers = T, 
-   fontsize_number = 12, 
-   column_names_side = c(&quot;top&quot;),
-   row_names_side = c(&quot;left&quot;),
-   angle_col = c(&quot;0&quot;),
-   circlize::colorRamp2(c(min(X), max(X)), c(&quot;yellow&quot;, &quot;darkorange&quot;), transparency = 0.5),
-   column_title = &quot;Gene Expression Matrix X&quot;,
-   heatmap_legend_param = list(title = &quot;Count&quot;),
-   legend = FALSE,
-   number_format = &quot;%.0f&quot;
-   )</code></pre>
-<p><img src="integration_cca_files/figure-html/unnamed-chunk-20-1.png" width="768" /></p>
-<pre class="r"><code>p2 &lt;- ComplexHeatmap::pheatmap(
-   Y, 
-   cluster_rows = F, cluster_cols = F,
-   display_numbers = T, 
-   fontsize_number = 12, 
-   column_names_side = c(&quot;top&quot;),
-   row_names_side = c(&quot;left&quot;),
-   angle_col = c(&quot;0&quot;),
-   circlize::colorRamp2(c(min(Y), max(Y)), c(&quot;yellow&quot;, &quot;darkorange&quot;), transparency = 0.5),
-   column_title = &quot;Gene Score Matrix Y&quot;,
-   heatmap_legend_param = list(title = &quot;Count&quot;),
-   legend = FALSE,
-   number_format = &quot;%.0f&quot;
-   )</code></pre>
-<p><img src="integration_cca_files/figure-html/unnamed-chunk-20-2.png" width="768" /></p>
-<pre class="r"><code>grid.newpage()
-pushViewport(viewport(layout = grid.layout(nr = 1, nc = 2)))
-pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 1))
-draw(p1, newpage = FALSE)
-upViewport()
-
-pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 2))
-draw(p2, newpage = FALSE)
-upViewport()</code></pre>
-<p><img src="integration_cca_files/figure-html/unnamed-chunk-20-3.png" width="768" /></p>
-<p>By inspection we can find the cells in Y that were actually taken from X. We aim to find those cells in both datasets that correspond to each other, i.e. that are highly similar.</p>
-<p>Next we will center and scale the data and then compute the SVD.</p>
-<pre class="r"><code>X_centered &lt;- t( t(X) - Matrix::colMeans(X))
-Y_centered &lt;- t( t(Y) - Matrix::colMeans(Y))
-X_scaled &lt;- t(t(X_centered) / matrixStats::colSds(X_centered))
-Y_scaled &lt;- t(t(Y_centered) / matrixStats::colSds(Y_centered))
-K = t(X_scaled) %*% Y_scaled
-svd_res &lt;- svd(K)
-
-hx &lt;- svd_res$u[,1:3] %&gt;%
-   `rownames&lt;-`(.,paste0(&quot;c_&quot;, 1:nrow(.))) %&gt;%
-   `colnames&lt;-`(.,paste0(&quot;u_&quot;, 1:ncol(.)))
-
-hy &lt;- svd_res$v[,1:3] %&gt;%
-   `rownames&lt;-`(.,paste0(&quot;d_&quot;, 1:nrow(.))) %&gt;%
-   `colnames&lt;-`(.,paste0(&quot;v_&quot;, 1:ncol(.)))
-
-p1 &lt;- ComplexHeatmap::pheatmap(
-   hx,
-   cluster_rows = F, cluster_cols = F,
-   display_numbers = T, 
-   fontsize_number = 12, 
-   column_names_side = c(&quot;top&quot;),
-   row_names_side = c(&quot;left&quot;),
-   angle_col = c(&quot;0&quot;),
-   circlize::colorRamp2(c(min(hx), max(hx)), 
-                        c(&quot;blue&quot;, &quot;yellow&quot;), transparency = 0.5),
-   column_title = &quot;Left Canonical Vector h_X&quot;,
-   legend = FALSE,
-   number_format = &quot;%.1f&quot;
-   )</code></pre>
-<p><img src="integration_cca_files/figure-html/unnamed-chunk-21-1.png" width="576" /></p>
-<pre class="r"><code>p2 &lt;- ComplexHeatmap::pheatmap(
-   hy,
-   cluster_rows = F, cluster_cols = F,
-   display_numbers = T, 
-   fontsize_number = 12, 
-   column_names_side = c(&quot;top&quot;),
-   row_names_side = c(&quot;left&quot;),
-   angle_col = c(&quot;0&quot;),
-   circlize::colorRamp2(c(min(hy), max(hy)), 
-                        c(&quot;blue&quot;, &quot;yellow&quot;), transparency = 0.5),
-   column_title = &quot;Right Canonical Vector h_Y&quot;,
-   legend = FALSE,
-   number_format = &quot;%.1f&quot;
-   )</code></pre>
-<p><img src="integration_cca_files/figure-html/unnamed-chunk-21-2.png" width="576" /></p>
-<pre class="r"><code>grid.newpage()
-pushViewport(viewport(layout = grid.layout(nr = 1, nc = 2)))
-pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 1))
-draw(p1, newpage = FALSE)
-upViewport()
-
-pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 2))
-draw(p2, newpage = FALSE)
-upViewport()</code></pre>
-<p><img src="integration_cca_files/figure-html/unnamed-chunk-21-3.png" width="576" /></p>
-<p>Here are scatter plots of <span class="math inline">\(z_X\)</span> and <span class="math inline">\(z_Y\)</span>:</p>
-<pre class="r"><code>zx &lt;- X %*% hx
-zy &lt;- Y %*% hy
-
-cbind(zx, zy) %&gt;%
-   as.data.frame() %&gt;%
-   rownames_to_column(var=&quot;gene&quot;) %&gt;%
-   pivot_longer(cols=!gene) %&gt;%
-   mutate(name = str_replace(name, &quot;u&quot;, &quot;zx&quot;),
-          name = str_replace(name, &quot;v&quot;, &quot;zy&quot;)) %&gt;%
-   mutate(comp = str_extract(name, &quot;[0-9]$&quot;),
-          comp = paste(&quot;Canonical Pair&quot;, comp)) %&gt;%
-   mutate(coord = ifelse(str_starts(name, &quot;zx&quot;), &quot;x&quot;, &quot;y&quot;)) %&gt;%
-   dplyr::select(-name) %&gt;%
-   pivot_wider(names_from = coord, values_from = value) %&gt;%
-   ggplot() +
-   geom_point(aes(x=x, y=y)) +
-   facet_wrap(~comp, scales = &quot;free&quot;) +
-   labs(x = &quot;z_X&quot;, y = &quot;z_Y&quot;)</code></pre>
-<p><img src="integration_cca_files/figure-html/unnamed-chunk-22-1.png" width="864" /></p>
-</div>
 </div>
 <div id="questions" class="section level1">
 <h1>Questions</h1>
 <ol style="list-style-type: decimal">
-<li><p>What is the effect of different proportions of cell types?</p></li>
-<li><p>What is the difference to simply computing the PCA on the concatenated matrices?</p></li>
+<li>What is the effect of different proportions of cell types?</li>
 </ol>
 </div>
 <div id="referencess" class="section level1 unnumbered">

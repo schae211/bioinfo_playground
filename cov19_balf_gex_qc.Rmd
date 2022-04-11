@@ -1,0 +1,467 @@
+---
+title: "Covid-19 BALF scRNA-seq Quality Control"
+author: "Philipp SL Schäfer"
+date: '`r format(Sys.time(), "%Y-%m-%d-%H-%M")`'
+editor_options: 
+  chunk_output_type: inline
+bibliography: references.bib
+csl: science.csl
+link-citations: TRUE
+---
+
+# Status
+
+Work in progress
+
+# Setup
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE)
+library(reticulate)
+Sys.setenv(RETICULATE_PYTHON =
+             "/home/pschaefer/miniconda3/envs/r-reticulate/bin/python")
+timestamp <- format(Sys.time(), "%Y-%m-%d-%H-%M")
+s <- 4242
+run_again <- TRUE
+```
+
+```{r}
+if (run_again) {
+  print("run_again set to TRUE, thus everything will be recomputed")
+} else {
+  print("run_again set to FALSE, thus old results will be kept")
+}
+```
+
+Loading Packages
+
+```{r}
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(magrittr)
+  library(sparseMatrixStats)
+  library(scDblFinder)
+  library(scuttle)
+  library(scran)
+  library(scater)
+  library(ggside)
+})
+```
+
+# Import Data
+
+We will use here the data from the following publication:
+
+Liao, M. et al. Single-cell landscape of bronchoalveolar immune cells in patients with COVID-19. Nat Med 26, 842–844 (2020). [@10.1038/s41591-020-0901-9]
+  
+
+```{r}
+if (Sys.info()["nodename"] == "CrunchyPeanut") {
+  input_dir <- "/mnt/sda/data/cov19_raw/"
+  output_dir <- "/home/philipp/Bioinfo_Playground/cov19_balf_gex_qc_output/"
+  if (!dir.exists(output_dir)) dir.create(output_dir)
+} else {
+  warning("No appropriate nodename, adjust paths manually")
+  stop()
+}
+```
+
+```{r}
+list.files(input_dir)
+```
+
+Reading in the meta data from the authors.
+
+```{r}
+samples_meta <- read_tsv( url( "https://raw.githubusercontent.com/zhangzlab/covid_balf/master/meta.txt" ) )
+samples_meta
+```
+
+Reading in the matrices.
+
+```{r}
+rna_list <- purrr::map2(samples_meta$sample, samples_meta$sample_new, function(sample, name) {
+  if (!str_starts(sample, "GSM")) {
+    Seurat::Read10X_h5(list.files(input_dir, full.names = TRUE)[
+      str_detect(list.files(input_dir), sample)
+      ])
+  } else {
+    Seurat::Read10X(list.files(input_dir, full.names = TRUE)[
+      str_detect(list.files(input_dir), tolower(name))
+    ])
+  }
+}) %>%
+  purrr::set_names(samples_meta$sample_new)
+str(rna_list)
+```
+
+# Subsetting Genes
+
+We need to remove the cov19 row before we can proceed.
+
+```{r}
+rownames(rna_list$M1)[grep("cov", rownames(rna_list$M1), ignore.case=T)]
+```
+
+```{r}
+rna_list <- purrr::map(rna_list, ~ .x[rownames(.x) != "nCoV", ])
+# check that the rownames are consistent
+stopifnot(
+  all(
+    purrr::map_dfc(rna_list, ~rownames(.x)) %>% apply(1, function(x) all(x==x[1]))
+    )
+)
+```
+
+First we will remove all genes that are not expressed in at least 3 cell in all sample (speeding up the downstream analysis).
+
+Removing genes which are not expressed in at least 3 cells in all samples.
+
+```{r}
+idx <- purrr::map_dfc(rna_list, ~ Matrix::rowSums(.x != 0) >= 3) %>%
+  apply(1, all)
+good_genes <- rownames(rna_list[[1]])[idx]
+print(paste0("Retained genes: ", length(good_genes), 
+             " from ", nrow(rna_list[[1]])))
+rna_list <- purrr::map(rna_list, function(smp) {
+    smp[good_genes, ]
+  })
+```
+
+# Empty Droplets
+
+Before subsetting we will create a tibble containing the metadata which we will update throughout the analysis.
+
+```{r}
+coldata <- purrr::imap_dfr(rna_list, ~ tibble::tibble(
+  sample = .y, barcode = colnames(.x))) %>%
+  mutate(joint_barcode = paste0(sample, "_", barcode))
+coldata %>% glimpse()
+```
+
+Plotting log10 of the cumulative UMI counts vs the rank of the cell or rather barcode ("kneeplot"). We need to find thresholds for each sample.
+
+```{r fig.width=16, fig.height=8}
+purrr::imap_dfr(rna_list, ~ tibble(sample = .y, 
+                                  umi_per_cell = Matrix::colSums(.x))) %>%
+  arrange(sample, desc(umi_per_cell)) %>%
+  group_by(sample) %>%
+  mutate(idx = seq_along(sample)) %>%
+  mutate(cum_umi_per_cell = cumsum(umi_per_cell)) %>%
+  ggplot() +
+  geom_line(aes(x=idx, y=cum_umi_per_cell)) +
+  facet_wrap(~sample, scales = "fixed") +
+  scale_y_log10() + scale_x_log10() +
+  labs(x = "Index", y = "Cumulative UMI Count")
+```
+
+And we will be using the following thresholds (determined by visual inspection). Especially for "sm027_Tel_5c_20211123" there is a very obvious knee, for the other samples the thresholds are a little bit arbitrary (like everything in bioinformatics).
+
+```{r}
+thresholds <- c("HC1" = 10000, 
+                "HC2" = 10000,
+                "HC3" = 9000,
+                "HC4" = 1800,
+                "M1" = 3000,
+                "M2" = 1800,
+                "M3" = 3000,
+                "S1" = 10000,
+                "S2" = 10000,
+                "S3" = 3000,
+                "S4" = 1800,
+                "S5" = 2200,
+                "S6" = 2500
+)
+stopifnot(all(names(rna_list) == names(thresholds)))
+```
+
+We clearly see that we got the filtered matrices already (meaning filtered by cellranger), except for the additional sample HC4.
+
+```{r fig.width=16, fig.height=8}
+p.list <- purrr::map(unique(coldata$sample), function(smp) {
+  tibble::tibble(
+    sample = smp,
+    umi_per_cell = sparseMatrixStats::colSums2(rna_list[[smp]])) %>%
+    arrange(sample, desc(umi_per_cell)) %>%
+    group_by(sample) %>%
+    mutate(idx = seq_along(sample)) %>%
+    mutate(cum_umi_per_cell = cumsum(umi_per_cell)) %>%
+    ggplot() +
+    geom_line(aes(x=idx, y=cum_umi_per_cell)) +
+    geom_vline(xintercept = thresholds[smp], color = "red") +
+    scale_y_log10() + scale_x_log10() +
+    labs(x = "Index", y = "Cumulative UMI Count", title = smp) +
+    theme(plot.title = element_text(hjust = 0.5))
+})
+do.call(gridExtra::grid.arrange, p.list)
+```
+
+Lastly we subset the count matrices based on these results.
+
+```{r}
+cell_qc <- purrr::map_dfr(unique(coldata$sample), function(smp) {
+  tibble(sample = smp, 
+         sum_umis = Matrix::colSums(rna_list[[smp]]),
+         detected_genes = Matrix::colSums(rna_list[[smp]] != 0),
+         barcode = colnames(rna_list[[smp]]), 
+         threshold = thresholds[smp]) }) %>%
+  arrange(sample, desc(sum_umis)) %>%
+  group_by(sample) %>%
+  mutate(rank = seq_along(sample)) %>%
+  mutate(cum_umi_per_cell = cumsum(sum_umis)) %>%
+  mutate(non_empty = ifelse(rank <= threshold, TRUE, FALSE))
+
+coldata <- coldata %>%
+  dplyr::left_join(cell_qc, by=c("sample", "barcode")) %>%
+  dplyr::select(sample, barcode, joint_barcode, sum_umis, detected_genes,
+         non_empty) %>%
+  dplyr::filter(non_empty) %>%
+  dplyr::select(!non_empty)
+
+rna_list <- purrr::map(names(rna_list), function(smp) {
+  mtx <- rna_list[[smp]]
+  valid_barcodes <- coldata %>% 
+    dplyr::filter(sample == smp) %>% 
+    dplyr::pull(barcode)
+  mtx[,valid_barcodes]
+}) %>% set_names(names(rna_list))
+```
+
+Check again. And I think it looks ok now.
+
+```{r fig.width=16, fig.height=8}
+purrr::imap_dfr(rna_list, ~ tibble(sample = .y, 
+                                  umi_per_cell = Matrix::colSums(.x))) %>%
+  arrange(sample, desc(umi_per_cell)) %>%
+  group_by(sample) %>%
+  mutate(idx = seq_along(sample)) %>%
+  mutate(cum_umi_per_cell = cumsum(umi_per_cell)) %>%
+  ggplot() +
+  geom_line(aes(x=idx, y=cum_umi_per_cell)) +
+  facet_wrap(~sample, scales = "fixed") +
+  scale_y_log10() + scale_x_log10() +
+  labs(x = "Index", y = "Cumulative UMI Count")
+```
+
+# RNA Doublet Scores - `scDblFinder`
+
+We will use `scDblFinder` as this package it implemented in R and seems to be better than `scrublet` (according to their vignette at least, but I guess their comparison might be biased!). Usually these tools simulate doublets and check how similar your actual cells are to these simulated doublets.
+
+See the description/vignette of the tool here: 
+
+1. http://www.bioconductor.org/packages/release/bioc/vignettes/scDblFinder/inst/doc/computeDoubletDensity.html
+
+2. http://www.bioconductor.org/packages/release/bioc/vignettes/scDblFinder/inst/doc/scDblFinder.html
+
+To use the tools we will temporarily create a single cell experiment object.
+
+```{r fig.width=10, fig.height=4, message=FALSE}
+dbr <- 0.08
+print(paste0("Using an expected doublet rate of: ", dbr))
+doublet_scores_scdbl <- purrr::imap(rna_list, function(smp, name) {
+  
+  print(name)
+  sce <- SingleCellExperiment(list(counts = smp))
+  sce <- logNormCounts(sce)
+  dec <- modelGeneVar(sce)
+  hvgs <- getTopHVGs(dec, n=2000)
+  set.seed(s)
+  sce <- runPCA(sce, ncomponents=30, subset_row=hvgs)
+  sce <- runUMAP(sce, dimred="PCA")
+  #scores <- computeDoubletDensity(sce, subset.row=hvgs)
+  sce <- scDblFinder(sce, dbr=dbr, iter=1)
+  scores <- sce$scDblFinder.score
+  classification <- sce$scDblFinder.class
+  names(scores) <- colnames(smp)
+  names(classification) <- colnames(smp)
+
+  # prepare plots
+  p1 <- tibble::tibble(cell = names(scores), score = scores, 
+                 UMAP1 = reducedDim(sce, "UMAP")[,1],
+                 UMAP2 = reducedDim(sce, "UMAP")[,2]) %>%
+    ggplot() +
+    geom_point(aes(x=UMAP1, y=UMAP2, color=score), size=0.2) +
+    scale_color_viridis_c()
+  p2 <- ggplot() +
+    geom_histogram(aes(scores), bins = 100, fill="grey", color="black") +
+    labs(y = "Count", x = "Doublet Score")
+  
+  # use cowplot for plotting the grid
+  plot_row <- cowplot::plot_grid(p1, p2)
+  title <- cowplot::ggdraw() + 
+    cowplot::draw_label(label = paste(name), fontface = "bold", x = 0, hjust = -2)
+  print(cowplot::plot_grid(title, plot_row, ncol = 1, rel_heights = c(0.1, 1)))
+  list(score = scores, classifcation = classification)
+})
+```
+
+Check how many predicted doublets per sample using our threshold set above. Let's keep the doublet scores and we will not remove/mask any cells, but rather check later on whether doublets are particularly enriched in any cluster we get.
+
+```{r}
+doublet_scores_scdbl %>%
+  purrr::imap_dfr(function(smp, name) {
+    tibble::tibble(sample = name, doublet_score = smp[["score"]],
+                   predicted_doublet = smp[["classifcation"]])
+  }) %>%
+  dplyr::count(sample, predicted_doublet) %>%
+  pivot_wider(names_from=predicted_doublet, values_from=n)
+```
+
+Let's also add the doublet scores to our coldata tibble.
+
+```{r}
+doublet_scores_scdbl_tbl <- doublet_scores_scdbl %>%
+  purrr::imap_dfr(function(smp, name) {
+    tibble::tibble(sample = name,
+                   barcode = names(smp[["score"]]),
+                   dbl_score_scdbl = smp[["score"]],
+                   pred_dbl_scdbl = smp[["classifcation"]])
+  })
+
+coldata <- coldata %>%
+  left_join(doublet_scores_scdbl_tbl, by=c("sample", "barcode"))
+
+coldata %>%
+  glimpse()
+```
+
+# QC Statistics
+
+Let's look at some common QC statistics:
+
+1. Total number of UMIs per cell
+2. Total number of detected genes per cell
+3. Fraction of mitochondrial genes.
+
+```{r}
+mito_genes <- 
+  rownames(rna_list[[1]])[grep("^MT-", rownames(rna_list[[1]]))]
+mito_genes
+```
+
+Computing the QC stats.
+
+Looking at the bottom/left tail of the distributions one might argue that the cutoff with regards to the number of UMIs is a little bit too strict for sample "sm023".
+
+```{r fig.width=10, fig.height=5}
+qc_stats_before <- purrr::imap_dfr(rna_list, function(mtx, name) {
+  umis_per_cell <-  Matrix::colSums(mtx)
+  genes_per_cell <-  Matrix::colSums(mtx != 0)
+  mt_fraction <-  Matrix::colSums(mtx[mito_genes, ]) /  Matrix::colSums(mtx) * 100
+  tibble(sample = name, barcode = colnames(mtx), umis_per_cell = umis_per_cell,
+         genes_per_cell = genes_per_cell, mt_fraction = mt_fraction)
+})
+
+qc_stats_before %>%
+  pivot_longer(cols = !c(sample, barcode), names_to = "stat") %>%
+  mutate(stat = ifelse(stat=="mt_fraction", "mt_fraction (%)", stat)) %>%
+  ggplot() +
+  geom_violin(aes(x=sample, y=value, fill=sample)) +
+  facet_wrap(~ stat, scales = "free") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+```
+
+We will be used the same thresholds as the authors of the paper.
+
+Removing cells with:
+
+1. Less than 200 detected genes
+2. More than 6000 detected genes
+3. Fewer than 1000 UMIs
+4. More than 10% mitochondrial fraction
+
+Let's add the QC thresholds to our coldata.
+
+```{r}
+coldata <- coldata %>%
+  left_join(qc_stats_before, by=c("sample", "barcode")) %>%
+  mutate(sum_umis_in_bound = (1000 < umis_per_cell),
+         detected_genes_in_bound = (20 < genes_per_cell & genes_per_cell <= 6000),
+         mt_fraction_in_bound = (mt_fraction < 10)) %>%
+  rowwise() %>%
+  mutate(qc_pass = all(sum_umis_in_bound, detected_genes_in_bound,
+                       mt_fraction_in_bound)) %>%
+  ungroup()
+
+coldata %>%
+  dplyr::filter(qc_pass) %>%
+  glimpse()
+```
+
+And subset the count matrix according to the thresholds
+
+```{r}
+rna_list_filtered <- purrr::map(names(rna_list), function(smp) {
+  mtx <- rna_list[[smp]]
+  valid_barcodes <- coldata %>% 
+    dplyr::filter(sample == smp, qc_pass) %>% 
+    dplyr::pull(barcode)
+  cat(paste0("Removing ", ncol(mtx)-length(valid_barcodes), " cells from ",
+             ncol(mtx), " cells in sample ", smp, "\n\n"))
+  mtx[,valid_barcodes]
+}) %>% set_names(names(rna_list))
+stopifnot(sum(purrr::map_dbl(rna_list_filtered, ~ ncol(.x))) == sum(coldata$qc_pass))
+```
+
+```{r fig.width=10, fig.height=5}
+qc_stats_after <- purrr::imap_dfr(rna_list_filtered, function(mtx, name) {
+  umis_per_cell <- Matrix::colSums(mtx)
+  genes_per_cell <- Matrix::colSums(mtx != 0)
+  mt_fraction <- Matrix::colSums(mtx[mito_genes, ]) / Matrix::colSums(mtx) * 100
+  tibble(sample = name, barcode = colnames(mtx), umis_per_cell = umis_per_cell,
+         genes_per_cell = genes_per_cell, mt_fraction = mt_fraction)
+})
+
+qc_stats_after %>%
+  pivot_longer(cols = !c(sample, barcode), names_to = "stat") %>%
+  mutate(stat = ifelse(stat=="mt_fraction", "mt_fraction (%)", stat)) %>%
+  ggplot() +
+  geom_violin(aes(x=sample, y=value, fill=sample)) +
+  facet_wrap(~ stat, scales = "free") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+```
+
+# Removing Doublets
+
+Lastly we will remove putative doublets. Therefore we will mainly use the `scDblFinder` Doublet Score (since it is very confident with the doublet assignment and performed goo din the latest benchmark).
+
+```{r}
+coldata <- coldata %>%
+  mutate(is_doublet = ifelse(pred_dbl_scdbl=="doublet", TRUE, FALSE))
+
+rna_list_filtered <- purrr::map(names(rna_list_filtered), function(smp) {
+  mtx <- rna_list_filtered[[smp]]
+  valid_barcodes <- coldata %>% 
+    dplyr::filter(sample == smp, qc_pass, !is_doublet) %>% 
+    dplyr::pull(barcode)
+  cat(paste0("Removing ", ncol(mtx)-length(valid_barcodes), " cells from ",
+             ncol(mtx), " cells in sample ", smp, "\n\n"))
+  mtx[,valid_barcodes]
+}) %>% set_names(names(rna_list))
+```
+
+How many cells are we removing from each sample?
+
+```{r}
+coldata_filtered <- coldata %>%
+  dplyr::filter(qc_pass, !is_doublet)
+```
+
+# Saving
+
+```{r message=FALSE}
+saveRDS(rna_list, 
+        paste0(output_dir, timestamp, "_rna_list.RDS"))
+saveRDS(rna_list_filtered, 
+        paste0(output_dir, timestamp, "_rna_list_filtered.RDS"))
+saveRDS(coldata, 
+        paste0(output_dir, timestamp, "_coldata_raw.RDS"))
+saveRDS(coldata_filtered, 
+        paste0(output_dir, timestamp, "_coldata_filtered_qc.RDS"))
+
+save.image(file = paste0(output_dir, "Latest_RNA_QC.RData"))
+```
+
+# References

@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Philipp SL Schäfer" />
+
+
+<title>10X PBMC GEX Processing</title>
+
+<script src="site_libs/header-attrs-2.13/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+<style type="text/css">
+/* for pandoc --citeproc since 2.11 */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Bioinfo Playground</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Content
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="iterative_lsi.html">Iterative LSI</a>
+    </li>
+    <li>
+      <a href="integration_cca_2.html">Integration via CCA</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">10X PBMC GEX Processing</h1>
+<h4 class="author">Philipp SL Schäfer</h4>
+<h4 class="date">2022-04-11-14-07</h4>
+
+</div>
+
+
+<div id="status" class="section level1">
+<h1>Status</h1>
+<p>Work in progress.</p>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>The goals are:</p>
+<ul>
+<li><p>Visualize common quality control statistic.</p></li>
+<li><p>Determine thresholds using the QC visualizations.</p></li>
+<li><p>Subset the cell accordingly.</p></li>
+</ul>
+</div>
+<div id="setup" class="section level1">
+<h1>Setup</h1>
+<pre class="r"><code>knitr::opts_chunk$set(echo = TRUE)
+library(reticulate)
+Sys.setenv(RETICULATE_PYTHON =
+             &quot;/home/pschaefer/miniconda3/envs/r-reticulate/bin/python&quot;)
+timestamp &lt;- format(Sys.time(), &quot;%Y-%m-%d-%H-%M&quot;)
+s &lt;- 4242</code></pre>
+<p>Loading Packages</p>
+<pre class="r"><code>suppressPackageStartupMessages({
+  library(tidyverse)
+  library(magrittr)
+  library(sparseMatrixStats)
+  library(scDblFinder)
+  library(scuttle)
+  library(scran)
+  library(scater)
+  library(ggside)
+})</code></pre>
+</div>
+<div id="import-data" class="section level1">
+<h1>Import Data</h1>
+<pre class="r"><code>if (Sys.info()[&quot;nodename&quot;] == &quot;CrunchyPeanut&quot;) {
+  input_dir &lt;- &quot;/mnt/sda/data/10X_pbmc_gex_10k/&quot;
+  output_dir &lt;- &quot;/home/philipp/Bioinfo_Playground/10x_pbmc_gex_processing_output/&quot;
+  if (!dir.exists(output_dir)) dir.create(output_dir)
+} else {
+  warning(&quot;No appropriate nodename, adjust paths manually&quot;)
+  stop()
+}</code></pre>
+<pre class="r"><code>list.files(input_dir)</code></pre>
+<pre><code>## [1] &quot;10k_PBMC_3p_nextgem_Chromium_X_metrics_summary.csv&quot;     
+## [2] &quot;10k_PBMC_3p_nextgem_Chromium_X_raw_feature_bc_matrix.h5&quot;
+## [3] &quot;description.txt&quot;</code></pre>
+</div>
+<div id="cellranger-qc-measures" class="section level1">
+<h1>Cellranger QC Measures</h1>
+<p>We will also read in the summary.csv files generated by cellranger.</p>
+<pre class="r"><code>read_csv(list.files(input_dir, full.names = TRUE)[
+  str_detect(list.files(input_dir), &quot;summary.csv$&quot;)], 
+  show_col_types = FALSE) %&gt;%
+  mutate(across(everything(), as.character)) %&gt;%
+  pivot_longer(cols=everything(), names_to=&quot;Metric&quot;, values_to=&quot;Value&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Metric"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Value"],"name":[2],"type":["chr"],"align":["left"]}],"data":[{"1":"Estimated Number of Cells","2":"11996"},{"1":"Mean Reads per Cell","2":"41379"},{"1":"Median Genes per Cell","2":"2049"},{"1":"Number of Reads","2":"496387931"},{"1":"Valid Barcodes","2":"98.0%"},{"1":"Sequencing Saturation","2":"61.1%"},{"1":"Q30 Bases in Barcode","2":"94.7%"},{"1":"Q30 Bases in RNA Read","2":"91.3%"},{"1":"Q30 Bases in UMI","2":"93.1%"},{"1":"Reads Mapped to Genome","2":"97.3%"},{"1":"Reads Mapped Confidently to Genome","2":"94.3%"},{"1":"Reads Mapped Confidently to Intergenic Regions","2":"4.2%"},{"1":"Reads Mapped Confidently to Intronic Regions","2":"34.3%"},{"1":"Reads Mapped Confidently to Exonic Regions","2":"55.8%"},{"1":"Reads Mapped Confidently to Transcriptome","2":"52.7%"},{"1":"Reads Mapped Antisense to Gene","2":"1.9%"},{"1":"Fraction Reads in Cells","2":"96.0%"},{"1":"Total Genes Detected","2":"25589"},{"1":"Median UMI Counts per Cell","2":"6896"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Reading in the snRNA-seq data. We will read in the “raw_feature_bc_matrix.h5” matrices.</p>
+<pre class="r"><code>rna_raw &lt;- Seurat::Read10X_h5(
+  list.files(input_dir, full.names = TRUE)[
+  str_detect(list.files(input_dir), &quot;raw_feature_bc_matrix.h5$&quot;)]
+)</code></pre>
+<pre><code>## Warning in sparseMatrix(i = indices[] + 1, p = indptr[], x = as.numeric(x
+## = counts[]), : &#39;giveCsparse&#39; has been deprecated; setting &#39;repr = &quot;T&quot;&#39;
+## for you</code></pre>
+<pre class="r"><code>str(rna_raw)</code></pre>
+<pre><code>## Formal class &#39;dgCMatrix&#39; [package &quot;Matrix&quot;] with 6 slots
+##   ..@ i       : int [1:31489037] 6021 21098 35942 18254 22096 36565 10660 10803 6286 35057 ...
+##   ..@ p       : int [1:2299295] 0 0 1 3 4 6 7 7 8 8 ...
+##   ..@ Dim     : int [1:2] 36601 2299294
+##   ..@ Dimnames:List of 2
+##   .. ..$ : chr [1:36601] &quot;MIR1302-2HG&quot; &quot;FAM138A&quot; &quot;OR4F5&quot; &quot;AL627309.1&quot; ...
+##   .. ..$ : chr [1:2299294] &quot;AAACCCAAGAAACACT-1&quot; &quot;AAACCCAAGAAACCAT-1&quot; &quot;AAACCCAAGAAACCCA-1&quot; &quot;AAACCCAAGAAACCCG-1&quot; ...
+##   ..@ x       : num [1:31489037] 1 1 1 1 1 1 1 1 1 1 ...
+##   ..@ factors : list()</code></pre>
+</div>
+<div id="filter-genes" class="section level1">
+<h1>Filter Genes</h1>
+<p>First we will remove all genes that are not expressed in at least 3 cells.</p>
+<pre class="r"><code>dim(rna_raw)</code></pre>
+<pre><code>## [1]   36601 2299294</code></pre>
+<pre class="r"><code>rna_raw &lt;- rna_raw[sparseMatrixStats::rowSums2(rna_raw != 0) &gt; 0, ]
+dim(rna_raw)</code></pre>
+<pre><code>## [1]   25746 2299294</code></pre>
+</div>
+<div id="empty-droplets" class="section level1">
+<h1>Empty Droplets</h1>
+<p>Before subsetting we will create a tibble containing the metadata which we will update throughout the analysis.</p>
+<pre class="r"><code>coldata &lt;- tibble::tibble(
+  barcode = colnames(rna_raw),
+  sample = &quot;pbmc_1&quot;)</code></pre>
+<p>Plotting log10 of the cumulative UMI counts vs the rank of the cell or rather barcode (“kneeplot”). We need to find thresholds for each sample.</p>
+<pre class="r"><code>purrr::map_dfr(unique(coldata$sample), function(smp) {
+  tibble(sample = smp, 
+         umi_per_cell = sparseMatrixStats::colSums2(rna_raw[, coldata$barcode[coldata$sample==smp]]))
+  }) %&gt;%
+  arrange(sample, desc(umi_per_cell)) %&gt;%
+  group_by(sample) %&gt;%
+  mutate(idx = seq_along(sample)) %&gt;%
+  mutate(cum_umi_per_cell = cumsum(umi_per_cell)) %&gt;%
+  ggplot() +
+  geom_line(aes(x=idx, y=cum_umi_per_cell)) +
+  facet_wrap(~sample, scales = &quot;fixed&quot;) +
+  scale_y_log10() + scale_x_log10() +
+  labs(x = &quot;Index&quot;, y = &quot;Cumulative UMI Count&quot;)</code></pre>
+<p><img src="10x_pbmc_gex_processing_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>And we will be using the following thresholds (determined by visual inspection). Especially for “sm027_Tel_5c_20211123” there is a very obvious knee, for the other samples the thresholds are a little bit arbitrary (like everything in bioinformatics).</p>
+<pre class="r"><code>thresholds &lt;- c(&quot;pbmc_1&quot; = 10.5e3)
+thresholds</code></pre>
+<pre><code>## pbmc_1 
+##  10500</code></pre>
+<pre class="r"><code>p.list &lt;- purrr::map(unique(coldata$sample), function(smp) {
+  tibble::tibble(
+    sample = smp,
+    umi_per_cell = sparseMatrixStats::colSums2(rna_raw[, coldata$barcode[coldata$sample==smp]])) %&gt;%
+    arrange(sample, desc(umi_per_cell)) %&gt;%
+    group_by(sample) %&gt;%
+    mutate(idx = seq_along(sample)) %&gt;%
+    mutate(cum_umi_per_cell = cumsum(umi_per_cell)) %&gt;%
+    ggplot() +
+    geom_line(aes(x=idx, y=cum_umi_per_cell)) +
+    geom_vline(xintercept = thresholds[smp], color = &quot;red&quot;) +
+    scale_y_log10() + scale_x_log10() +
+    labs(x = &quot;Index&quot;, y = &quot;Cumulative UMI Count&quot;, title = smp) +
+    theme(plot.title = element_text(hjust = 0.5))
+})
+do.call(gridExtra::grid.arrange, p.list)</code></pre>
+<p><img src="10x_pbmc_gex_processing_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>Lastly we subset the count matrices based on these results.</p>
+<pre class="r"><code>cell_qc &lt;- purrr::map_dfr(unique(coldata$sample), function(smp) {
+  tibble(sample = smp, 
+         sum_umis = sparseMatrixStats::colSums2(rna_raw[, coldata$barcode[coldata$sample==smp]]),
+         detected_genes = sparseMatrixStats::colSums2(rna_raw[, coldata$barcode[coldata$sample==smp]] != 0),
+         barcode = coldata$barcode[coldata$sample==smp], 
+         threshold = thresholds[smp]) }) %&gt;%
+  arrange(sample, desc(sum_umis)) %&gt;%
+  group_by(sample) %&gt;%
+  mutate(rank = seq_along(sample)) %&gt;%
+  mutate(cum_umi_per_cell = cumsum(sum_umis)) %&gt;%
+  mutate(non_empty = ifelse(rank &lt;= threshold, TRUE, FALSE))
+
+coldata &lt;- coldata %&gt;%
+  dplyr::left_join(cell_qc, by=c(&quot;sample&quot;, &quot;barcode&quot;)) %&gt;%
+  dplyr::select(sample, barcode, sum_umis, detected_genes, non_empty)
+
+dim(rna_raw)</code></pre>
+<pre><code>## [1]   25746 2299294</code></pre>
+<pre class="r"><code>rna &lt;- rna_raw[,coldata %&gt;% dplyr::filter(non_empty) %&gt;% dplyr::pull(barcode)]
+coldata &lt;- coldata %&gt;% dplyr::filter(non_empty)
+dim(rna)</code></pre>
+<pre><code>## [1] 25746 10500</code></pre>
+<p>Check again. And I think it looks ok now.</p>
+<pre class="r"><code>purrr::map_dfr(unique(coldata$sample), function(smp) {
+  tibble(sample = smp, 
+         umi_per_cell = sparseMatrixStats::colSums2(rna[, coldata$barcode[coldata$sample==smp]]))
+  }) %&gt;%
+  arrange(sample, desc(umi_per_cell)) %&gt;%
+  group_by(sample) %&gt;%
+  mutate(idx = seq_along(sample)) %&gt;%
+  mutate(cum_umi_per_cell = cumsum(umi_per_cell)) %&gt;%
+  ggplot() +
+  geom_line(aes(x=idx, y=cum_umi_per_cell)) +
+  facet_wrap(~sample, scales = &quot;fixed&quot;) +
+  scale_y_log10() + scale_x_log10() +
+  labs(x = &quot;Index&quot;, y = &quot;Cumulative UMI Count&quot;)</code></pre>
+<p><img src="10x_pbmc_gex_processing_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+</div>
+<div id="rna-doublet-scores---scdblfinder" class="section level1">
+<h1>RNA Doublet Scores - <code>scDblFinder</code></h1>
+<p>We will use <code>scDblFinder</code> as this package it implemented in R and seems to be better than <code>scrublet</code> (according to their vignette at least, but I guess their comparison might be biased!). Usually these tools simulate doublets and check how similar your actual cells are to these simulated doublets.</p>
+<p>See the description/vignette of the tool here:</p>
+<ol style="list-style-type: decimal">
+<li><p><a href="http://www.bioconductor.org/packages/release/bioc/vignettes/scDblFinder/inst/doc/computeDoubletDensity.html" class="uri">http://www.bioconductor.org/packages/release/bioc/vignettes/scDblFinder/inst/doc/computeDoubletDensity.html</a></p></li>
+<li><p><a href="http://www.bioconductor.org/packages/release/bioc/vignettes/scDblFinder/inst/doc/scDblFinder.html" class="uri">http://www.bioconductor.org/packages/release/bioc/vignettes/scDblFinder/inst/doc/scDblFinder.html</a></p></li>
+</ol>
+<p>To use the tools we will temporarily create a single cell experiment object.</p>
+<pre class="r"><code>dbr &lt;- 0.076
+print(paste0(&quot;Using an expected doublet rate of: &quot;, dbr))</code></pre>
+<pre><code>## [1] &quot;Using an expected doublet rate of: 0.076&quot;</code></pre>
+<pre class="r"><code>sce &lt;- SingleCellExperiment(list(counts = rna))
+sce &lt;- logNormCounts(sce)
+dec &lt;- modelGeneVar(sce)
+hvgs &lt;- getTopHVGs(dec, n=2000)
+set.seed(s)
+sce &lt;- runPCA(sce, ncomponents=30, subset_row=hvgs)
+sce &lt;- runUMAP(sce, dimred=&quot;PCA&quot;)
+#scores &lt;- computeDoubletDensity(sce, subset.row=hvgs)
+sce &lt;- scDblFinder(sce, dbr=dbr, iter=1)
+scores &lt;- sce$scDblFinder.score
+classification &lt;- sce$scDblFinder.class
+barcode &lt;- rownames(sce@colData)
+
+# prepare plots
+p1 &lt;- tibble::tibble(cell = names(scores), score = scores, 
+               UMAP1 = reducedDim(sce, &quot;UMAP&quot;)[,1],
+               UMAP2 = reducedDim(sce, &quot;UMAP&quot;)[,2]) %&gt;%
+  ggplot() +
+  geom_point(aes(x=UMAP1, y=UMAP2, color=score), size=0.2) +
+  scale_color_viridis_c()
+p2 &lt;- ggplot() +
+  geom_histogram(aes(scores), bins = 100, fill=&quot;grey&quot;, color=&quot;black&quot;) +
+  labs(y = &quot;Count&quot;, x = &quot;Doublet Score&quot;)
+  
+# use cowplot for plotting the grid
+cowplot::plot_grid(p1, p2)</code></pre>
+<p><img src="10x_pbmc_gex_processing_files/figure-html/unnamed-chunk-13-1.png" width="960" /></p>
+<pre class="r"><code>doublet_scores &lt;- tibble::tibble(barcode = barcode,
+                                 score = scores,
+                                 classification = classification)
+coldata &lt;- coldata %&gt;%
+  left_join(doublet_scores, by=&quot;barcode&quot;)</code></pre>
+<p>Check how many predicted doublets per sample using our threshold set above. Let’s keep the doublet scores and we will not remove/mask any cells, but rather check later on whether doublets are particularly enriched in any cluster we get.</p>
+<pre class="r"><code>coldata %&gt;%
+  dplyr::count(sample, classification)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["sample"],"name":[1],"type":["chr"],"align":["left"]},{"label":["classification"],"name":[2],"type":["fct"],"align":["left"]},{"label":["n"],"name":[3],"type":["int"],"align":["right"]}],"data":[{"1":"pbmc_1","2":"singlet","3":"9682"},{"1":"pbmc_1","2":"doublet","3":"818"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="qc-statistics" class="section level1">
+<h1>QC Statistics</h1>
+<p>Let’s look at some common QC statistics:</p>
+<ol style="list-style-type: decimal">
+<li>Total number of UMIs per cell</li>
+<li>Total number of detected genes per cell</li>
+<li>Fraction of mitochondrial genes.</li>
+</ol>
+<p>However, using mitochondrial genes probably makes no sense looking at single-nuc data. See this paper for a short comparison between single-cell and single-nuc RNA-sequencing. <span class="citation">(<a href="#ref-10.1042/etls20210074" role="doc-biblioref"><em>1</em></a>)</span> Furthermore, we do not know the names of the mitochondrial gene here, most likely they are gene starting with "mt-/_".</p>
+<pre class="r"><code>mito_genes &lt;- 
+  rownames(rna)[grep(&quot;^MT-&quot;, rownames(rna))]
+mito_genes</code></pre>
+<pre><code>##  [1] &quot;MT-ND1&quot;  &quot;MT-ND2&quot;  &quot;MT-CO1&quot;  &quot;MT-CO2&quot;  &quot;MT-ATP8&quot; &quot;MT-ATP6&quot;
+##  [7] &quot;MT-CO3&quot;  &quot;MT-ND3&quot;  &quot;MT-ND4L&quot; &quot;MT-ND4&quot;  &quot;MT-ND5&quot;  &quot;MT-ND6&quot; 
+## [13] &quot;MT-CYB&quot;</code></pre>
+<p>Computing the QC stats.</p>
+<p>Looking at the bottom/left tail of the distributions one might argue that the cutoff with regards to the number of UMIs is a little bit too strict for sample “sm023.”</p>
+<pre class="r"><code>qc_stats_before &lt;- tibble::tibble(
+  sample = &quot;pcmbc_1&quot;,
+  barcode = colnames(rna),
+  umis_per_cell = Matrix::colSums(rna),
+  genes_per_cell = Matrix::colSums(rna != 0),
+  mt_fraction = Matrix::colSums(rna[mito_genes, ]) /  Matrix::colSums(rna) * 100
+)
+
+qc_stats_before %&gt;%
+  pivot_longer(cols = !c(sample, barcode), names_to = &quot;stat&quot;) %&gt;%
+  mutate(stat = ifelse(stat==&quot;mt_fraction&quot;, &quot;mt_fraction (%)&quot;, stat)) %&gt;%
+  ggplot() +
+  geom_violin(aes(x=sample, y=value, fill=sample)) +
+  facet_wrap(~ stat, scales = &quot;free&quot;) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = &quot;none&quot;)</code></pre>
+<p><img src="10x_pbmc_gex_processing_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>Generally speaking the initial QC should not be too stringent.</p>
+<p>Removing cells with:</p>
+<ol style="list-style-type: decimal">
+<li>More than 9000 genes per cell</li>
+<li>Mitochondrial fraction (%) above 15</li>
+<li>More than 20000 UMIs per cell</li>
+</ol>
+<p>Let’s add the QC thresholds to our coldata.</p>
+<pre class="r"><code>coldata &lt;- coldata %&gt;%
+  mutate(sum_umis_in_bound = (sum_umis &lt;= 20000),
+         detected_genes_in_bound = (detected_genes &lt;= 9000),
+         mt_fraction = Matrix::colSums(rna[mito_genes, ]) /  
+           Matrix::colSums(rna) * 100,
+         mt_fraction_in_bound = mt_fraction &lt;= 15) %&gt;%
+  rowwise() %&gt;%
+  mutate(qc_pass = all(non_empty, sum_umis_in_bound, 
+                       detected_genes_in_bound, mt_fraction_in_bound)) %&gt;%
+  ungroup()
+
+coldata %&gt;%
+  dplyr::filter(qc_pass) %&gt;%
+  glimpse()</code></pre>
+<pre><code>## Rows: 10,224
+## Columns: 12
+## $ sample                  &lt;chr&gt; &quot;pbmc_1&quot;, &quot;pbmc_1&quot;, &quot;pbmc_1&quot;, &quot;pbmc_1&quot;,…
+## $ barcode                 &lt;chr&gt; &quot;AAACCCAAGGCCCAAA-1&quot;, &quot;AAACCCAAGTAATACG…
+## $ sum_umis                &lt;dbl&gt; 12143, 7811, 9741, 5561, 7399, 4593, 70…
+## $ detected_genes          &lt;dbl&gt; 3022, 2667, 2934, 1525, 2078, 1550, 252…
+## $ non_empty               &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRU…
+## $ score                   &lt;dbl&gt; 0.0033944435, 0.0063149929, 0.021740824…
+## $ classification          &lt;fct&gt; singlet, singlet, singlet, singlet, sin…
+## $ sum_umis_in_bound       &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRU…
+## $ detected_genes_in_bound &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRU…
+## $ mt_fraction             &lt;dbl&gt; 6.406983, 6.311612, 8.643876, 5.196907,…
+## $ mt_fraction_in_bound    &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRU…
+## $ qc_pass                 &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRU…</code></pre>
+<pre class="r"><code>qc_stats_after &lt;- tibble::tibble(
+  sample = &quot;pcmbc_1&quot;,
+  barcode = colnames(rna[,coldata$barcode[coldata$qc_pass]]),
+  umis_per_cell = Matrix::colSums(rna[,coldata$barcode[coldata$qc_pass]]),
+  genes_per_cell = Matrix::colSums(rna[,coldata$barcode[coldata$qc_pass]] != 0),
+  mt_fraction = Matrix::colSums(rna[,coldata$barcode[coldata$qc_pass]][mito_genes, ]) /  Matrix::colSums(rna[,coldata$barcode[coldata$qc_pass]]) * 100
+)
+
+qc_stats_after %&gt;%
+  pivot_longer(cols = !c(sample, barcode), names_to = &quot;stat&quot;) %&gt;%
+  mutate(stat = ifelse(stat==&quot;mt_fraction&quot;, &quot;mt_fraction (%)&quot;, stat)) %&gt;%
+  ggplot() +
+  geom_violin(aes(x=sample, y=value, fill=sample)) +
+  facet_wrap(~ stat, scales = &quot;free&quot;) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = &quot;none&quot;)</code></pre>
+<p><img src="10x_pbmc_gex_processing_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+</div>
+<div id="saving" class="section level1">
+<h1>Saving</h1>
+<pre class="r"><code>saveRDS(rna, 
+        paste0(output_dir, timestamp, &quot;10x_pbmc_processed_rna_counts.RDS&quot;))
+saveRDS(coldata, 
+        paste0(output_dir, timestamp, &quot;10x_pbmc_processed_coldata.RDS&quot;))
+
+save.image(file = paste0(output_dir, &quot;Latest_10x_pbmc_processed.RData&quot;))</code></pre>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+<div id="refs" class="references csl-bib-body">
+<div id="ref-10.1042/etls20210074" class="csl-entry">
+<div class="csl-left-margin">1. </div><div class="csl-right-inline">J. Fischer, T. Ayers, <span class="nocase">Single nucleus RNA-sequencing: how it’s done, applications and limitations</span>. <em>Emerging Topics in Life Sciences</em>. <strong>5</strong>, 687–690 (2021).</div>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
