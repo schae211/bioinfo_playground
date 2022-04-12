@@ -1,0 +1,1366 @@
+
+           ___      .______        ______  __    __  .______      
+          /   \     |   _  \      /      ||  |  |  | |   _  \     
+         /  ^  \    |  |_)  |    |  ,----'|  |__|  | |  |_)  |    
+        /  /_\  \   |      /     |  |     |   __   | |      /     
+       /  _____  \  |  |\  \\___ |  `----.|  |  |  | |  |\  \\___.
+      /__/     \__\ | _| `._____| \______||__|  |__| | _| `._____|
+    
+Logging With ArchR!
+
+Start Time : 2022-04-12 13:40:41
+
+------- ArchR Info
+
+ArchRThreads = 1
+ArchRGenome = Hg19
+
+------- System Info
+
+Computer OS = unix
+Total Cores = 16
+
+------- Session Info
+
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.4 LTS
+
+Matrix products: default
+BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.9.0
+LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.9.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+ [1] grid      parallel  stats4    stats     graphics  grDevices utils    
+ [8] datasets  methods   base     
+
+other attached packages:
+ [1] nabor_0.5.0                       SeuratObject_4.0.4               
+ [3] Seurat_4.1.0                      gridExtra_2.3                    
+ [5] Rsamtools_2.8.0                   BSgenome.Hsapiens.UCSC.hg38_1.4.3
+ [7] BSgenome_1.60.0                   rtracklayer_1.52.1               
+ [9] Biostrings_2.60.2                 XVector_0.32.0                   
+[11] ArchR_1.0.1                       rhdf5_2.36.0                     
+[13] Matrix_1.4-1                      data.table_1.14.2                
+[15] ggside_0.2.0                      scater_1.20.1                    
+[17] scran_1.20.1                      scuttle_1.2.1                    
+[19] SingleCellExperiment_1.14.1       SummarizedExperiment_1.22.0      
+[21] Biobase_2.52.0                    GenomicRanges_1.44.0             
+[23] GenomeInfoDb_1.28.4               IRanges_2.26.0                   
+[25] S4Vectors_0.30.2                  BiocGenerics_0.38.0              
+[27] scDblFinder_1.6.0                 sparseMatrixStats_1.4.2          
+[29] MatrixGenerics_1.4.3              matrixStats_0.61.0               
+[31] magrittr_2.0.3                    forcats_0.5.1                    
+[33] stringr_1.4.0                     dplyr_1.0.8                      
+[35] purrr_0.3.4                       readr_2.1.2                      
+[37] tidyr_1.2.0                       tibble_3.1.6                     
+[39] ggplot2_3.3.5                     tidyverse_1.3.1                  
+[41] reticulate_1.24                  
+
+loaded via a namespace (and not attached):
+  [1] utf8_1.2.2                        tidyselect_1.1.2                 
+  [3] htmlwidgets_1.5.4                 BiocParallel_1.26.2              
+  [5] Rtsne_0.15                        munsell_0.5.0                    
+  [7] ScaledMatrix_1.0.0                codetools_0.2-18                 
+  [9] ica_1.0-2                         statmod_1.4.36                   
+ [11] xgboost_1.5.2.1                   future_1.24.0                    
+ [13] miniUI_0.1.1.1                    withr_2.5.0                      
+ [15] spatstat.random_2.2-0             colorspace_2.0-3                 
+ [17] highr_0.9                         knitr_1.38                       
+ [19] rstudioapi_0.13                   ROCR_1.0-11                      
+ [21] tensor_1.5                        listenv_0.8.0                    
+ [23] labeling_0.4.2                    GenomeInfoDbData_1.2.6           
+ [25] polyclip_1.10-0                   farver_2.1.0                     
+ [27] bit64_4.0.5                       parallelly_1.31.0                
+ [29] vctrs_0.4.0                       generics_0.1.2                   
+ [31] xfun_0.30                         R6_2.5.1                         
+ [33] ggbeeswarm_0.6.0                  rsvd_1.0.5                       
+ [35] isoband_0.2.5                     locfit_1.5-9.5                   
+ [37] hdf5r_1.3.5                       bitops_1.0-7                     
+ [39] rhdf5filters_1.4.0                spatstat.utils_2.3-0             
+ [41] DelayedArray_0.18.0               assertthat_0.2.1                 
+ [43] BiocIO_1.2.0                      promises_1.2.0.1                 
+ [45] scales_1.1.1                      vroom_1.5.7                      
+ [47] beeswarm_0.4.0                    gtable_0.3.0                     
+ [49] beachmat_2.8.1                    Cairo_1.5-15                     
+ [51] globals_0.14.0                    goftest_1.2-3                    
+ [53] rlang_1.0.2                       splines_4.1.3                    
+ [55] lazyeval_0.2.2                    spatstat.geom_2.4-0              
+ [57] broom_0.7.12                      abind_1.4-5                      
+ [59] yaml_2.3.5                        reshape2_1.4.4                   
+ [61] modelr_0.1.8                      backports_1.4.1                  
+ [63] httpuv_1.6.5                      tools_4.1.3                      
+ [65] ellipsis_0.3.2                    spatstat.core_2.4-2              
+ [67] jquerylib_0.1.4                   RColorBrewer_1.1-3               
+ [69] ggridges_0.5.3                    Rcpp_1.0.8.3                     
+ [71] plyr_1.8.7                        zlibbioc_1.38.0                  
+ [73] RCurl_1.98-1.6                    rpart_4.1.16                     
+ [75] deldir_1.0-6                      pbapply_1.5-0                    
+ [77] viridis_0.6.2                     cowplot_1.1.1                    
+ [79] zoo_1.8-9                         haven_2.4.3                      
+ [81] ggrepel_0.9.1                     cluster_2.1.3                    
+ [83] fs_1.5.2                          RSpectra_0.16-0                  
+ [85] scattermore_0.8                   lmtest_0.9-40                    
+ [87] reprex_2.0.1                      RANN_2.6.1                       
+ [89] fitdistrplus_1.1-8                hms_1.1.1                        
+ [91] patchwork_1.1.1                   mime_0.12                        
+ [93] evaluate_0.15                     xtable_1.8-4                     
+ [95] XML_3.99-0.9                      readxl_1.4.0                     
+ [97] compiler_4.1.3                    KernSmooth_2.23-20               
+ [99] crayon_1.5.1                      BSgenome.Hsapiens.UCSC.hg19_1.4.3
+[101] htmltools_0.5.2                   mgcv_1.8-40                      
+[103] later_1.3.0                       tzdb_0.3.0                       
+[105] lubridate_1.8.0                   DBI_1.1.2                        
+[107] dbplyr_2.1.1                      MASS_7.3-56                      
+[109] cli_3.2.0                         metapod_1.0.0                    
+[111] igraph_1.3.0                      pkgconfig_2.0.3                  
+[113] GenomicAlignments_1.28.0          spatstat.sparse_2.1-0            
+[115] plotly_4.10.0                     xml2_1.3.3                       
+[117] vipor_0.4.5                       bslib_0.3.1                      
+[119] dqrng_0.3.0                       rvest_1.0.2                      
+[121] digest_0.6.29                     sctransform_0.3.3                
+[123] RcppAnnoy_0.0.19                  spatstat.data_2.1-4              
+[125] rmarkdown_2.13                    cellranger_1.1.0                 
+[127] leiden_0.3.9                      uwot_0.1.11                      
+[129] edgeR_3.34.1                      DelayedMatrixStats_1.14.3        
+[131] restfulr_0.0.13                   gtools_3.9.2                     
+[133] shiny_1.7.1                       rjson_0.2.21                     
+[135] nlme_3.1-157                      lifecycle_1.0.1                  
+[137] jsonlite_1.8.0                    Rhdf5lib_1.14.2                  
+[139] BiocNeighbors_1.10.0              viridisLite_0.4.0                
+[141] limma_3.48.3                      fansi_1.0.3                      
+[143] pillar_1.7.0                      lattice_0.20-45                  
+[145] fastmap_1.1.0                     httr_1.4.2                       
+[147] survival_3.2-13                   glue_1.6.2                       
+[149] png_0.1-7                         bluster_1.2.1                    
+[151] bit_4.0.4                         stringi_1.7.6                    
+[153] sass_0.4.1                        BiocSingular_1.8.1               
+[155] irlba_2.3.5                       future.apply_1.8.1               
+
+
+------- Log Info
+
+
+2022-04-12 13:40:41 : plotTSSEnrichment Input-Parameters, Class = list
+
+plotTSSEnrichment Input-Parameters$ArchRProj: length = 1
+
+plotTSSEnrichment Input-Parameters$groupBy: length = 1
+[1] "Sample"
+
+
+plotTSSEnrichment Input-Parameters$chromSizes: length = 24
+GRanges object with 6 ranges and 0 metadata columns:
+      seqnames      ranges strand
+         <Rle>   <IRanges>  <Rle>
+  [1]     chr1 1-248956422      *
+  [2]     chr2 1-242193529      *
+  [3]     chr3 1-198295559      *
+  [4]     chr4 1-190214555      *
+  [5]     chr5 1-181538259      *
+  [6]     chr6 1-170805979      *
+  -------
+  seqinfo: 24 sequences from an unspecified genome
+
+
+plotTSSEnrichment Input-Parameters$TSS: length = 166023
+GRanges object with 6 ranges and 2 metadata columns:
+      seqnames    ranges strand |     tx_id     tx_name
+         <Rle> <IRanges>  <Rle> | <integer> <character>
+  [1]     chr1     29554      + |         1  uc057aty.1
+  [2]     chr1     30267      + |         2  uc057atz.1
+  [3]     chr1     30366      + |         3  uc031tlb.1
+  [4]     chr1     69091      + |         4  uc001aal.1
+  [5]     chr1    160446      + |         5  uc057aum.1
+  [6]     chr1    182393      + |         6  uc057auo.1
+  -------
+  seqinfo: 24 sequences from hg38 genome
+
+
+plotTSSEnrichment Input-Parameters$flank: length = 1
+[1] 2000
+
+
+plotTSSEnrichment Input-Parameters$norm: length = 1
+[1] 100
+
+
+plotTSSEnrichment Input-Parameters$smooth: length = 1
+[1] 11
+
+
+plotTSSEnrichment Input-Parameters$pal: length = 0
+NULL
+
+
+plotTSSEnrichment Input-Parameters$returnDF: length = 1
+[1] TRUE
+
+
+plotTSSEnrichment Input-Parameters$threads: length = 1
+[1] 1
+
+
+plotTSSEnrichment Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:40:41 : pbmc_1 Computing TSS (1 of 1)!, 0.003 mins elapsed.
+
+2022-04-12 13:40:41 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr1"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:40:41 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:40:42 : Merging, 0.019 mins elapsed.
+###########
+
+2022-04-12 13:40:52 : pbmc_1 : Cov : chr1, Class = Rle
+
+pbmc_1 : Cov : chr1: length = 248946292
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:40:53 : pbmc_1 : SumTSS : chr1, Class = integer
+
+pbmc_1 : SumTSS : chr1: length = 4001
+[1] 6459 6404 6101 6060 6765 6362
+
+
+
+2022-04-12 13:40:53 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr2"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:40:53 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:40:54 : Merging, 0.016 mins elapsed.
+###########
+
+2022-04-12 13:41:01 : pbmc_1 : Cov : chr2, Class = Rle
+
+pbmc_1 : Cov : chr2: length = 242183467
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:41:01 : pbmc_1 : SumTSS : chr2, Class = integer
+
+pbmc_1 : SumTSS : chr2: length = 4001
+[1] 11238 10867 10743 11149 11712 11122
+
+
+
+2022-04-12 13:41:01 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr3"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:41:01 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:41:02 : Merging, 0.013 mins elapsed.
+###########
+
+2022-04-12 13:41:08 : pbmc_1 : Cov : chr3, Class = Rle
+
+pbmc_1 : Cov : chr3: length = 198220267
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:41:08 : pbmc_1 : SumTSS : chr3, Class = integer
+
+pbmc_1 : SumTSS : chr3: length = 4001
+[1] 14873 14247 14346 14883 15029 14667
+
+
+
+2022-04-12 13:41:08 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr4"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:41:08 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:41:08 : Merging, 0.009 mins elapsed.
+###########
+
+2022-04-12 13:41:12 : pbmc_1 : Cov : chr4, Class = Rle
+
+pbmc_1 : Cov : chr4: length = 190204543
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:41:12 : pbmc_1 : SumTSS : chr4, Class = integer
+
+pbmc_1 : SumTSS : chr4: length = 4001
+[1] 16757 16088 16065 16615 16826 16466
+
+
+
+2022-04-12 13:41:12 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr5"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:41:12 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:41:13 : Merging, 0.02 mins elapsed.
+###########
+
+2022-04-12 13:41:18 : pbmc_1 : Cov : chr5, Class = Rle
+
+pbmc_1 : Cov : chr5: length = 181477980
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:41:18 : pbmc_1 : SumTSS : chr5, Class = integer
+
+pbmc_1 : SumTSS : chr5: length = 4001
+[1] 19910 18863 18537 19382 19449 19269
+
+
+
+2022-04-12 13:41:18 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr6"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:41:18 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:41:18 : Merging, 0.011 mins elapsed.
+###########
+
+2022-04-12 13:41:24 : pbmc_1 : Cov : chr6, Class = Rle
+
+pbmc_1 : Cov : chr6: length = 170739460
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:41:24 : pbmc_1 : SumTSS : chr6, Class = integer
+
+pbmc_1 : SumTSS : chr6: length = 4001
+[1] 23484 22431 21820 23029 23155 23053
+
+
+
+2022-04-12 13:41:24 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr7"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:41:24 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:41:25 : Merging, 0.011 mins elapsed.
+###########
+
+2022-04-12 13:41:29 : pbmc_1 : Cov : chr7, Class = Rle
+
+pbmc_1 : Cov : chr7: length = 159335931
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:41:30 : pbmc_1 : SumTSS : chr7, Class = integer
+
+pbmc_1 : SumTSS : chr7: length = 4001
+[1] 26303 25045 24545 25571 25834 25775
+
+
+
+2022-04-12 13:41:30 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr8"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:41:30 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:41:30 : Merging, 0.007 mins elapsed.
+###########
+
+2022-04-12 13:41:34 : pbmc_1 : Cov : chr8, Class = Rle
+
+pbmc_1 : Cov : chr8: length = 145076001
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:41:34 : pbmc_1 : SumTSS : chr8, Class = integer
+
+pbmc_1 : SumTSS : chr8: length = 4001
+[1] 28690 27460 27076 27867 28041 27900
+
+
+
+2022-04-12 13:41:34 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr9"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:41:34 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:41:34 : Merging, 0.01 mins elapsed.
+###########
+
+2022-04-12 13:41:38 : pbmc_1 : Cov : chr9, Class = Rle
+
+pbmc_1 : Cov : chr9: length = 138228039
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:41:38 : pbmc_1 : SumTSS : chr9, Class = integer
+
+pbmc_1 : SumTSS : chr9: length = 4001
+[1] 30737 29414 29222 30235 30318 30132
+
+
+
+2022-04-12 13:41:38 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr10"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:41:38 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:41:39 : Merging, 0.01 mins elapsed.
+###########
+
+2022-04-12 13:41:43 : pbmc_1 : Cov : chr10, Class = Rle
+
+pbmc_1 : Cov : chr10: length = 133787382
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:41:43 : pbmc_1 : SumTSS : chr10, Class = integer
+
+pbmc_1 : SumTSS : chr10: length = 4001
+[1] 32814 31527 31198 32163 32502 32222
+
+
+
+2022-04-12 13:41:43 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr11"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:41:43 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:41:44 : Merging, 0.01 mins elapsed.
+###########
+
+2022-04-12 13:41:49 : pbmc_1 : Cov : chr11, Class = Rle
+
+pbmc_1 : Cov : chr11: length = 135076613
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:41:49 : pbmc_1 : SumTSS : chr11, Class = integer
+
+pbmc_1 : SumTSS : chr11: length = 4001
+[1] 39199 37758 37510 38568 39062 38455
+
+
+
+2022-04-12 13:41:49 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr12"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:41:49 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:41:50 : Merging, 0.012 mins elapsed.
+###########
+
+2022-04-12 13:41:55 : pbmc_1 : Cov : chr12, Class = Rle
+
+pbmc_1 : Cov : chr12: length = 133265307
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:41:56 : pbmc_1 : SumTSS : chr12, Class = integer
+
+pbmc_1 : SumTSS : chr12: length = 4001
+[1] 43319 42041 41929 43168 43695 42902
+
+
+
+2022-04-12 13:41:56 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr13"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:41:56 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:41:56 : Merging, 0.005 mins elapsed.
+###########
+
+2022-04-12 13:41:58 : pbmc_1 : Cov : chr13, Class = Rle
+
+pbmc_1 : Cov : chr13: length = 114354208
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:41:58 : pbmc_1 : SumTSS : chr13, Class = integer
+
+pbmc_1 : SumTSS : chr13: length = 4001
+[1] 44333 43145 42991 44156 44617 43762
+
+
+
+2022-04-12 13:41:58 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr14"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:41:58 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:41:58 : Merging, 0.007 mins elapsed.
+###########
+
+2022-04-12 13:42:02 : pbmc_1 : Cov : chr14, Class = Rle
+
+pbmc_1 : Cov : chr14: length = 106883743
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:42:02 : pbmc_1 : SumTSS : chr14, Class = integer
+
+pbmc_1 : SumTSS : chr14: length = 4001
+[1] 47118 45999 45665 46733 47353 46571
+
+
+
+2022-04-12 13:42:02 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr15"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:42:02 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:42:02 : Merging, 0.008 mins elapsed.
+###########
+
+2022-04-12 13:42:05 : pbmc_1 : Cov : chr15, Class = Rle
+
+pbmc_1 : Cov : chr15: length = 101981182
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:42:06 : pbmc_1 : SumTSS : chr15, Class = integer
+
+pbmc_1 : SumTSS : chr15: length = 4001
+[1] 49168 48241 47881 48923 49527 48714
+
+
+
+2022-04-12 13:42:06 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr16"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:42:06 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:42:06 : Merging, 0.008 mins elapsed.
+###########
+
+2022-04-12 13:42:10 : pbmc_1 : Cov : chr16, Class = Rle
+
+pbmc_1 : Cov : chr16: length = 90224792
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:42:10 : pbmc_1 : SumTSS : chr16, Class = integer
+
+pbmc_1 : SumTSS : chr16: length = 4001
+[1] 53914 52711 52243 53346 54614 53486
+
+
+
+2022-04-12 13:42:10 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr17"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:42:10 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:42:11 : Merging, 0.013 mins elapsed.
+###########
+
+2022-04-12 13:42:18 : pbmc_1 : Cov : chr17, Class = Rle
+
+pbmc_1 : Cov : chr17: length = 83247387
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:42:18 : pbmc_1 : SumTSS : chr17, Class = integer
+
+pbmc_1 : SumTSS : chr17: length = 4001
+[1] 60272 59106 58640 59818 61449 59969
+
+
+
+2022-04-12 13:42:18 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr18"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:42:18 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:42:18 : Merging, 0.004 mins elapsed.
+###########
+
+2022-04-12 13:42:20 : pbmc_1 : Cov : chr18, Class = Rle
+
+pbmc_1 : Cov : chr18: length = 80263214
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:42:20 : pbmc_1 : SumTSS : chr18, Class = integer
+
+pbmc_1 : SumTSS : chr18: length = 4001
+[1] 61129 60214 59624 60702 62363 60761
+
+
+
+2022-04-12 13:42:20 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr19"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:42:20 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:42:21 : Merging, 0.014 mins elapsed.
+###########
+
+2022-04-12 13:42:25 : pbmc_1 : Cov : chr19, Class = Rle
+
+pbmc_1 : Cov : chr19: length = 58607586
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:42:25 : pbmc_1 : SumTSS : chr19, Class = integer
+
+pbmc_1 : SumTSS : chr19: length = 4001
+[1] 70397 69535 68771 69575 71328 69551
+
+
+
+2022-04-12 13:42:25 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr20"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:42:25 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:42:25 : Merging, 0.007 mins elapsed.
+###########
+
+2022-04-12 13:42:28 : pbmc_1 : Cov : chr20, Class = Rle
+
+pbmc_1 : Cov : chr20: length = 64333285
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:42:28 : pbmc_1 : SumTSS : chr20, Class = integer
+
+pbmc_1 : SumTSS : chr20: length = 4001
+[1] 71916 71178 70460 71129 73018 71171
+
+
+
+2022-04-12 13:42:28 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr21"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:42:28 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:42:28 : Merging, 0.003 mins elapsed.
+###########
+
+2022-04-12 13:42:29 : pbmc_1 : Cov : chr21, Class = Rle
+
+pbmc_1 : Cov : chr21: length = 46699978
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:42:29 : pbmc_1 : SumTSS : chr21, Class = integer
+
+pbmc_1 : SumTSS : chr21: length = 4001
+[1] 72490 71673 70957 71742 73508 71762
+
+
+
+2022-04-12 13:42:29 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chr22"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:42:29 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:42:30 : Merging, 0.007 mins elapsed.
+###########
+
+2022-04-12 13:42:32 : pbmc_1 : Cov : chr22, Class = Rle
+
+pbmc_1 : Cov : chr22: length = 50808425
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:42:32 : pbmc_1 : SumTSS : chr22, Class = integer
+
+pbmc_1 : SumTSS : chr22: length = 4001
+[1] 74173 73511 72619 73509 75200 73455
+
+
+
+2022-04-12 13:42:32 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chrX"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:42:32 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:42:32 : Merging, 0.005 mins elapsed.
+###########
+
+2022-04-12 13:42:35 : pbmc_1 : Cov : chrX, Class = Rle
+
+pbmc_1 : Cov : chrX: length = 156030794
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:42:35 : pbmc_1 : SumTSS : chrX, Class = integer
+
+pbmc_1 : SumTSS : chrX: length = 4001
+[1] 75419 74894 73860 74703 76559 74687
+
+
+
+2022-04-12 13:42:35 : getFragmentsFromArrow Input-Parameters, Class = list
+
+getFragmentsFromArrow Input-Parameters$ArrowFile: length = 1
+                                                                                                               pbmc_1 
+"/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/ConsensusQC_ArchR_PROJ/ArrowFiles/pbmc_1.arrow" 
+
+
+getFragmentsFromArrow Input-Parameters$chr: length = 1
+[1] "chrY"
+
+
+getFragmentsFromArrow Input-Parameters$cellNames: length = 9969
+[1] "pbmc_1#TAGCTAGGTTTGGGTA-1" "pbmc_1#TTGGAGGCAGGCTTCG-1"
+[3] "pbmc_1#CATAGACTCCCTGGAA-1" "pbmc_1#GGTTGCGGTAAACAAG-1"
+[5] "pbmc_1#GGTGAGTAGGCGTAAA-1" "pbmc_1#ATTTGCAAGCCGCAAC-1"
+
+
+getFragmentsFromArrow Input-Parameters$verbose: length = 1
+[1] FALSE
+
+
+getFragmentsFromArrow Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-plotTSSEnrichment-b70651b370e2-Date-2022-04-12_Time-13-40-41.log"
+
+
+2022-04-12 13:42:35 : Reading Chr 1 of 1, 0 mins elapsed.
+###########
+2022-04-12 13:42:35 : Merging, 0.001 mins elapsed.
+###########
+
+2022-04-12 13:42:35 : pbmc_1 : Cov : chrY, Class = Rle
+
+pbmc_1 : Cov : chrY: length = 56885271
+integer-Rle of length 6 with 1 run
+  Lengths: 6
+  Values : 0
+
+
+
+2022-04-12 13:42:35 : pbmc_1 : SumTSS : chrY, Class = integer
+
+pbmc_1 : SumTSS : chrY: length = 4001
+[1] 75419 74894 73860 74703 76559 74687
+
+
+
+2022-04-12 13:42:35 : pbmc_1 : TSSDf, Class = DFrame
+DataFrame with 4001 rows and 5 columns
+           group         x     value normValue smoothValue
+     <character> <numeric> <integer> <numeric>   <numeric>
+1         pbmc_1     -2000     75419   1.17778     1.16669
+2         pbmc_1     -1999     74894   1.16958     1.16669
+3         pbmc_1     -1998     73860   1.15343     1.16669
+4         pbmc_1     -1997     74703   1.16659     1.16669
+5         pbmc_1     -1996     76559   1.19558     1.16669
+...          ...       ...       ...       ...         ...
+3997      pbmc_1      1996     50544  0.789317    0.811898
+3998      pbmc_1      1997     51966  0.811523    0.811898
+3999      pbmc_1      1998     51829  0.809384    0.811898
+4000      pbmc_1      1999     53219  0.831091    0.811898
+4001      pbmc_1      2000     52278  0.816396    0.811898
+
+2022-04-12 13:42:35 : pbmc_1 Finished Computing TSS (1 of 1)!, 1.899 mins elapsed.
+
+2022-04-12 13:42:35 : All : TSSDf, Class = DFrame
+DataFrame with 4001 rows and 5 columns
+           group         x     value normValue smoothValue
+     <character> <numeric> <integer> <numeric>   <numeric>
+1         pbmc_1     -2000     75419   1.17778     1.16669
+2         pbmc_1     -1999     74894   1.16958     1.16669
+3         pbmc_1     -1998     73860   1.15343     1.16669
+4         pbmc_1     -1997     74703   1.16659     1.16669
+5         pbmc_1     -1996     76559   1.19558     1.16669
+...          ...       ...       ...       ...         ...
+3997      pbmc_1      1996     50544  0.789317    0.811898
+3998      pbmc_1      1997     51966  0.811523    0.811898
+3999      pbmc_1      1998     51829  0.809384    0.811898
+4000      pbmc_1      1999     53219  0.831091    0.811898
+4001      pbmc_1      2000     52278  0.816396    0.811898
+
+
+------- Completed
+
+End Time : 2022-04-12 13:42:35
+Elapsed Time Minutes = 1.90702749093374
+Elapsed Time Hours = 0.0317838172117869
+
+-------
+
+
+

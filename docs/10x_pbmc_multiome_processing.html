@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Philipp SL Schäfer" />
+
+
+<title>10X PBMC GEX Processing</title>
+
+<script src="site_libs/header-attrs-2.13/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+<style type="text/css">
+/* for pandoc --citeproc since 2.11 */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Bioinfo Playground</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Content
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="iterative_lsi.html">Iterative LSI</a>
+    </li>
+    <li>
+      <a href="integration_cca_2.html">Integration via CCA</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">10X PBMC GEX Processing</h1>
+<h4 class="author">Philipp SL Schäfer</h4>
+<h4 class="date">2022-04-12-14-09</h4>
+
+</div>
+
+
+<div id="status" class="section level1">
+<h1>Status</h1>
+<p>Work in progress.</p>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>The goals are:</p>
+<ul>
+<li><p>Visualize common quality control statistic.</p></li>
+<li><p>Determine thresholds using the QC visualizations.</p></li>
+<li><p>Subset the cell accordingly.</p></li>
+</ul>
+</div>
+<div id="setup" class="section level1">
+<h1>Setup</h1>
+<pre class="r"><code>knitr::opts_chunk$set(echo = TRUE)
+library(reticulate)
+Sys.setenv(RETICULATE_PYTHON =
+             &quot;/home/pschaefer/miniconda3/envs/r-reticulate/bin/python&quot;)
+timestamp &lt;- format(Sys.time(), &quot;%Y-%m-%d-%H-%M&quot;)
+s &lt;- 4242</code></pre>
+<p>Loading Packages</p>
+<pre class="r"><code>suppressPackageStartupMessages({
+  library(tidyverse)
+  library(magrittr)
+  library(sparseMatrixStats)
+  library(scDblFinder)
+  library(scuttle)
+  library(scran)
+  library(scater)
+  library(ggside)
+  library(ArchR)
+  library(parallel)
+})</code></pre>
+</div>
+<div id="import-data" class="section level1">
+<h1>Import Data</h1>
+<pre class="r"><code>if (Sys.info()[&quot;nodename&quot;] == &quot;CrunchyPeanut&quot;) {
+  input_dir &lt;- &quot;/mnt/sda/data/10X_pbmc_multiome_10k/&quot;
+  output_dir &lt;- &quot;/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/&quot;
+  if (!dir.exists(output_dir)) dir.create(output_dir)
+} else {
+  warning(&quot;No appropriate nodename, adjust paths manually&quot;)
+  stop()
+}</code></pre>
+<pre class="r"><code>list.files(input_dir)</code></pre>
+<pre><code>## [1] &quot;description.txt&quot;                                      
+## [2] &quot;pbmc_granulocyte_sorted_10k_atac_fragments.tsv.gz&quot;    
+## [3] &quot;pbmc_granulocyte_sorted_10k_atac_fragments.tsv.gz.tbi&quot;
+## [4] &quot;pbmc_granulocyte_sorted_10k_per_barcode_metrics.csv&quot;  
+## [5] &quot;pbmc_granulocyte_sorted_10k_raw_feature_bc_matrix.h5&quot; 
+## [6] &quot;pbmc_granulocyte_sorted_10k_summary.csv&quot;</code></pre>
+</div>
+<div id="cellranger-qc-measures" class="section level1">
+<h1>Cellranger QC Measures</h1>
+<p>We will also read in the summary.csv files generated by cellranger.</p>
+<pre class="r"><code>read_csv(list.files(input_dir, full.names = TRUE)[
+  str_detect(list.files(input_dir), &quot;summary.csv$&quot;)], 
+  show_col_types = FALSE) %&gt;%
+  mutate(across(everything(), as.character)) %&gt;%
+  pivot_longer(cols=everything(), names_to=&quot;Metric&quot;, values_to=&quot;Value&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Metric"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Value"],"name":[2],"type":["chr"],"align":["left"]}],"data":[{"1":"Sample ID","2":"pbmc_granulocyte_sorted_10k"},{"1":"Pipeline version","2":"cellranger-arc-1.0.0"},{"1":"Genome","2":"GRCh38"},{"1":"Estimated number of cells","2":"11909"},{"1":"ATAC Confidently mapped read pairs","2":"0.91738"},{"1":"ATAC Fraction of genome in peaks","2":"0.04313"},{"1":"ATAC Fraction of high-quality fragments in cells","2":"0.91608"},{"1":"ATAC Fraction of high-quality fragments overlapping TSS","2":"0.44712"},{"1":"ATAC Fraction of high-quality fragments overlapping peaks","2":"0.71444"},{"1":"ATAC Fraction of transposition events in peaks in cells","2":"0.69475"},{"1":"ATAC Mean raw read pairs per cell","2":"38374.42556"},{"1":"ATAC Median high-quality fragments per cell","2":"13486"},{"1":"ATAC Non-nuclear read pairs","2":"0.009"},{"1":"ATAC Number of peaks","2":"108377"},{"1":"ATAC Percent duplicates","2":"0.52291"},{"1":"ATAC Q30 bases in barcode","2":"0.88702"},{"1":"ATAC Q30 bases in read 1","2":"0.95118"},{"1":"ATAC Q30 bases in read 2","2":"0.94851"},{"1":"ATAC Q30 bases in sample index i1","2":"0.92152"},{"1":"ATAC Sequenced read pairs","2":"457001034"},{"1":"ATAC TSS enrichment score","2":"9.84731"},{"1":"ATAC Unmapped read pairs","2":"0.01172"},{"1":"ATAC Valid barcodes","2":"0.97822"},{"1":"Feature linkages detected","2":"1672610"},{"1":"GEX Fraction of transcriptomic reads in cells","2":"0.87187"},{"1":"GEX Mean raw reads per cell","2":"52201.79478"},{"1":"GEX Median UMI counts per cell","2":"3776"},{"1":"GEX Median genes per cell","2":"1826"},{"1":"GEX Percent duplicates","2":"0.85213"},{"1":"GEX Q30 bases in UMI","2":"0.9215"},{"1":"GEX Q30 bases in barcode","2":"0.92881"},{"1":"GEX Q30 bases in read 2","2":"0.89132"},{"1":"GEX Q30 bases in sample index i1","2":"0.9155"},{"1":"GEX Q30 bases in sample index i2","2":"0.89045"},{"1":"GEX Reads mapped antisense to gene","2":"0.15361"},{"1":"GEX Reads mapped confidently to exonic regions","2":"0.48467"},{"1":"GEX Reads mapped confidently to genome","2":"0.90964"},{"1":"GEX Reads mapped confidently to intergenic regions","2":"0.06188"},{"1":"GEX Reads mapped confidently to intronic regions","2":"0.36309"},{"1":"GEX Reads mapped confidently to transcriptome","2":"0.6875"},{"1":"GEX Reads mapped to genome","2":"0.96914"},{"1":"GEX Reads with TSO","2":"0.06991"},{"1":"GEX Sequenced read pairs","2":"621671174"},{"1":"GEX Total genes detected","2":"29732"},{"1":"GEX Valid UMIs","2":"0.99957"},{"1":"GEX Valid barcodes","2":"0.95378"},{"1":"Linked genes","2":"15494"},{"1":"Linked peaks","2":"85468"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="rna-qc" class="section level1">
+<h1>RNA QC</h1>
+<p>Reading in the snRNA-seq data. We will read in the “raw_feature_bc_matrix.h5” matrices.</p>
+<pre class="r"><code>rna_raw &lt;- Seurat::Read10X_h5(
+  list.files(input_dir, full.names = TRUE)[
+  str_detect(list.files(input_dir), &quot;raw_feature_bc_matrix.h5$&quot;)]
+) %&gt;%
+  .$`Gene Expression`</code></pre>
+<pre><code>## Warning in sparseMatrix(i = indices[] + 1, p = indptr[], x = as.numeric(x =
+## counts[]), : &#39;giveCsparse&#39; has been deprecated; setting &#39;repr = &quot;T&quot;&#39; for you</code></pre>
+<pre><code>## Genome matrix has multiple modalities, returning a list of matrices for this genome</code></pre>
+<pre class="r"><code>str(rna_raw)</code></pre>
+<pre><code>## Formal class &#39;dgCMatrix&#39; [package &quot;Matrix&quot;] with 6 slots
+##   ..@ i       : int [1:30803407] 4311 6042 2066 19813 22763 36566 3182 27462 846 21902 ...
+##   ..@ p       : int [1:736321] 0 2 3 4 6 8 10 13 18 19 ...
+##   ..@ Dim     : int [1:2] 36601 736320
+##   ..@ Dimnames:List of 2
+##   .. ..$ : chr [1:36601] &quot;MIR1302-2HG&quot; &quot;FAM138A&quot; &quot;OR4F5&quot; &quot;AL627309.1&quot; ...
+##   .. ..$ : chr [1:736320] &quot;AAACAGCCAAACAACA-1&quot; &quot;AAACAGCCAAACATAG-1&quot; &quot;AAACAGCCAAACCCTA-1&quot; &quot;AAACAGCCAAACCTAT-1&quot; ...
+##   ..@ x       : num [1:30803407] 1 1 1 1 1 1 1 1 1 1 ...
+##   ..@ factors : list()</code></pre>
+<div id="filter-genes" class="section level2">
+<h2>Filter Genes</h2>
+<p>First we will remove all genes that are not expressed in at least 3 cells.</p>
+<pre class="r"><code>dim(rna_raw)</code></pre>
+<pre><code>## [1]  36601 736320</code></pre>
+<pre class="r"><code>rna_raw &lt;- rna_raw[sparseMatrixStats::rowSums2(rna_raw != 0) &gt; 0, ]
+dim(rna_raw)</code></pre>
+<pre><code>## [1]  29972 736320</code></pre>
+</div>
+<div id="empty-droplets" class="section level2">
+<h2>Empty Droplets</h2>
+<p>Before subsetting we will create a tibble containing the metadata which we will update throughout the analysis.</p>
+<pre class="r"><code>coldata &lt;- tibble::tibble(
+  barcode = colnames(rna_raw),
+  sample = &quot;pbmc_1&quot;)</code></pre>
+<p>Plotting log10 of the cumulative UMI counts vs the rank of the cell or rather barcode (“kneeplot”). We need to find thresholds for each sample.</p>
+<pre class="r"><code>purrr::map_dfr(unique(coldata$sample), function(smp) {
+  tibble(sample = smp, 
+         umi_per_cell = sparseMatrixStats::colSums2(rna_raw[, coldata$barcode[coldata$sample==smp]]))
+  }) %&gt;%
+  arrange(sample, desc(umi_per_cell)) %&gt;%
+  group_by(sample) %&gt;%
+  mutate(idx = seq_along(sample)) %&gt;%
+  mutate(cum_umi_per_cell = cumsum(umi_per_cell)) %&gt;%
+  ggplot() +
+  geom_line(aes(x=idx, y=cum_umi_per_cell)) +
+  facet_wrap(~sample, scales = &quot;fixed&quot;) +
+  scale_y_log10() + scale_x_log10() +
+  labs(x = &quot;Index&quot;, y = &quot;Cumulative UMI Count&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>And we will be using the following thresholds (determined by visual inspection). Especially for “sm027_Tel_5c_20211123” there is a very obvious knee, for the other samples the thresholds are a little bit arbitrary (like everything in bioinformatics).</p>
+<pre class="r"><code>thresholds &lt;- c(&quot;pbmc_1&quot; = 11.5e3)
+thresholds</code></pre>
+<pre><code>## pbmc_1 
+##  11500</code></pre>
+<pre class="r"><code>p.list &lt;- purrr::map(unique(coldata$sample), function(smp) {
+  tibble::tibble(
+    sample = smp,
+    umi_per_cell = sparseMatrixStats::colSums2(rna_raw[, coldata$barcode[coldata$sample==smp]])) %&gt;%
+    arrange(sample, desc(umi_per_cell)) %&gt;%
+    group_by(sample) %&gt;%
+    mutate(idx = seq_along(sample)) %&gt;%
+    mutate(cum_umi_per_cell = cumsum(umi_per_cell)) %&gt;%
+    ggplot() +
+    geom_line(aes(x=idx, y=cum_umi_per_cell)) +
+    geom_vline(xintercept = thresholds[smp], color = &quot;red&quot;) +
+    scale_y_log10() + scale_x_log10() +
+    labs(x = &quot;Index&quot;, y = &quot;Cumulative UMI Count&quot;, title = smp) +
+    theme(plot.title = element_text(hjust = 0.5))
+})
+do.call(gridExtra::grid.arrange, p.list)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>Lastly we subset the count matrices based on these results.</p>
+<pre class="r"><code>cell_qc &lt;- purrr::map_dfr(unique(coldata$sample), function(smp) {
+  tibble(sample = smp, 
+         sum_umis = sparseMatrixStats::colSums2(rna_raw[, coldata$barcode[coldata$sample==smp]]),
+         detected_genes = sparseMatrixStats::colSums2(rna_raw[, coldata$barcode[coldata$sample==smp]] != 0),
+         barcode = coldata$barcode[coldata$sample==smp], 
+         threshold = thresholds[smp]) }) %&gt;%
+  arrange(sample, desc(sum_umis)) %&gt;%
+  group_by(sample) %&gt;%
+  mutate(rank = seq_along(sample)) %&gt;%
+  mutate(cum_umi_per_cell = cumsum(sum_umis)) %&gt;%
+  mutate(non_empty = ifelse(rank &lt;= threshold, TRUE, FALSE))
+
+coldata &lt;- coldata %&gt;%
+  dplyr::left_join(cell_qc, by=c(&quot;sample&quot;, &quot;barcode&quot;)) %&gt;%
+  dplyr::select(sample, barcode, sum_umis, detected_genes, non_empty)
+
+dim(rna_raw)</code></pre>
+<pre><code>## [1]  29972 736320</code></pre>
+<pre class="r"><code>rna &lt;- rna_raw[,coldata %&gt;% dplyr::filter(non_empty) %&gt;% dplyr::pull(barcode)]
+coldata &lt;- coldata %&gt;% dplyr::filter(non_empty)
+dim(rna)</code></pre>
+<pre><code>## [1] 29972 11500</code></pre>
+<p>Check again. And I think it looks ok now.</p>
+<pre class="r"><code>purrr::map_dfr(unique(coldata$sample), function(smp) {
+  tibble(sample = smp, 
+         umi_per_cell = sparseMatrixStats::colSums2(rna[, coldata$barcode[coldata$sample==smp]]))
+  }) %&gt;%
+  arrange(sample, desc(umi_per_cell)) %&gt;%
+  group_by(sample) %&gt;%
+  mutate(idx = seq_along(sample)) %&gt;%
+  mutate(cum_umi_per_cell = cumsum(umi_per_cell)) %&gt;%
+  ggplot() +
+  geom_line(aes(x=idx, y=cum_umi_per_cell)) +
+  facet_wrap(~sample, scales = &quot;fixed&quot;) +
+  scale_y_log10() + scale_x_log10() +
+  labs(x = &quot;Index&quot;, y = &quot;Cumulative UMI Count&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+</div>
+<div id="rna-doublet-scores---scdblfinder" class="section level2">
+<h2>RNA Doublet Scores - <code>scDblFinder</code></h2>
+<p>We will use <code>scDblFinder</code> as this package it implemented in R and seems to be better than <code>scrublet</code> (according to their vignette at least, but I guess their comparison might be biased!). Usually these tools simulate doublets and check how similar your actual cells are to these simulated doublets.</p>
+<p>See the description/vignette of the tool here:</p>
+<ol style="list-style-type: decimal">
+<li><p><a href="http://www.bioconductor.org/packages/release/bioc/vignettes/scDblFinder/inst/doc/computeDoubletDensity.html" class="uri">http://www.bioconductor.org/packages/release/bioc/vignettes/scDblFinder/inst/doc/computeDoubletDensity.html</a></p></li>
+<li><p><a href="http://www.bioconductor.org/packages/release/bioc/vignettes/scDblFinder/inst/doc/scDblFinder.html" class="uri">http://www.bioconductor.org/packages/release/bioc/vignettes/scDblFinder/inst/doc/scDblFinder.html</a></p></li>
+</ol>
+<p>To use the tools we will temporarily create a single cell experiment object.</p>
+<pre class="r"><code>dbr &lt;- 0.076
+print(paste0(&quot;Using an expected doublet rate of: &quot;, dbr))</code></pre>
+<pre><code>## [1] &quot;Using an expected doublet rate of: 0.076&quot;</code></pre>
+<pre class="r"><code>sce &lt;- SingleCellExperiment(list(counts = rna))
+sce &lt;- logNormCounts(sce)
+dec &lt;- modelGeneVar(sce)
+hvgs &lt;- getTopHVGs(dec, n=2000)
+set.seed(s)
+sce &lt;- runPCA(sce, ncomponents=30, subset_row=hvgs)
+sce &lt;- runUMAP(sce, dimred=&quot;PCA&quot;)
+#scores &lt;- computeDoubletDensity(sce, subset.row=hvgs)
+sce &lt;- scDblFinder(sce, dbr=dbr, iter=1)
+scores &lt;- sce$scDblFinder.score
+classification &lt;- sce$scDblFinder.class
+barcode &lt;- rownames(sce@colData)
+
+# prepare plots
+p1 &lt;- tibble::tibble(cell = names(scores), score = scores, 
+               UMAP1 = reducedDim(sce, &quot;UMAP&quot;)[,1],
+               UMAP2 = reducedDim(sce, &quot;UMAP&quot;)[,2]) %&gt;%
+  ggplot() +
+  geom_point(aes(x=UMAP1, y=UMAP2, color=score), size=0.2) +
+  scale_color_viridis_c()
+p2 &lt;- ggplot() +
+  geom_histogram(aes(scores), bins = 100, fill=&quot;grey&quot;, color=&quot;black&quot;) +
+  labs(y = &quot;Count&quot;, x = &quot;Doublet Score&quot;)
+  
+# use cowplot for plotting the grid
+cowplot::plot_grid(p1, p2)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-13-1.png" width="960" /></p>
+<pre class="r"><code>doublet_scores &lt;- tibble::tibble(barcode = barcode,
+                                 score = scores,
+                                 classification = classification)
+coldata &lt;- coldata %&gt;%
+  left_join(doublet_scores, by=&quot;barcode&quot;)</code></pre>
+<p>Check how many predicted doublets per sample using our threshold set above. Let’s keep the doublet scores and we will not remove/mask any cells, but rather check later on whether doublets are particularly enriched in any cluster we get.</p>
+<pre class="r"><code>coldata %&gt;%
+  dplyr::count(sample, classification)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["sample"],"name":[1],"type":["chr"],"align":["left"]},{"label":["classification"],"name":[2],"type":["fct"],"align":["left"]},{"label":["n"],"name":[3],"type":["int"],"align":["right"]}],"data":[{"1":"pbmc_1","2":"singlet","3":"10406"},{"1":"pbmc_1","2":"doublet","3":"1094"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="qc-statistics" class="section level2">
+<h2>QC Statistics</h2>
+<p>Let’s look at some common QC statistics:</p>
+<ol style="list-style-type: decimal">
+<li>Total number of UMIs per cell</li>
+<li>Total number of detected genes per cell</li>
+<li>Fraction of mitochondrial genes.</li>
+</ol>
+<p>However, using mitochondrial genes probably makes no sense looking at single-nuc data. See this paper for a short comparison between single-cell and single-nuc RNA-sequencing. <span class="citation">(<a href="#ref-10.1042/etls20210074" role="doc-biblioref"><em>1</em></a>)</span> Furthermore, we do not know the names of the mitochondrial gene here, most likely they are gene starting with "mt-/_".</p>
+<pre class="r"><code>mito_genes &lt;- 
+  rownames(rna)[grep(&quot;^MT-&quot;, rownames(rna))]
+mito_genes</code></pre>
+<pre><code>##  [1] &quot;MT-ND1&quot;  &quot;MT-ND2&quot;  &quot;MT-CO1&quot;  &quot;MT-CO2&quot;  &quot;MT-ATP8&quot; &quot;MT-ATP6&quot; &quot;MT-CO3&quot; 
+##  [8] &quot;MT-ND3&quot;  &quot;MT-ND4L&quot; &quot;MT-ND4&quot;  &quot;MT-ND5&quot;  &quot;MT-ND6&quot;  &quot;MT-CYB&quot;</code></pre>
+<p>Computing the QC stats.</p>
+<p>Looking at the bottom/left tail of the distributions one might argue that the cutoff with regards to the number of UMIs is a little bit too strict for sample “sm023.”</p>
+<pre class="r"><code>qc_stats_before &lt;- tibble::tibble(
+  sample = &quot;pcmbc_1&quot;,
+  barcode = colnames(rna),
+  umis_per_cell = Matrix::colSums(rna),
+  genes_per_cell = Matrix::colSums(rna != 0),
+  mt_fraction = Matrix::colSums(rna[mito_genes, ]) /  Matrix::colSums(rna) * 100
+)
+
+qc_stats_before %&gt;%
+  pivot_longer(cols = !c(sample, barcode), names_to = &quot;stat&quot;) %&gt;%
+  mutate(stat = ifelse(stat==&quot;mt_fraction&quot;, &quot;mt_fraction (%)&quot;, stat)) %&gt;%
+  ggplot() +
+  geom_violin(aes(x=sample, y=value, fill=sample)) +
+  facet_wrap(~ stat, scales = &quot;free&quot;) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = &quot;none&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>Generally speaking the initial QC should not be too stringent.</p>
+<p>Removing cells with:</p>
+<ol style="list-style-type: decimal">
+<li>More than 6000 genes per cell</li>
+<li>Mitochondrial fraction (%) above 20</li>
+<li>More than 15000 UMIs per cell</li>
+</ol>
+<p>Let’s add the QC thresholds to our coldata.</p>
+<pre class="r"><code>coldata &lt;- coldata %&gt;%
+  mutate(sum_umis_in_bound = (sum_umis &lt;= 15000),
+         detected_genes_in_bound = (detected_genes &lt;= 6000),
+         mt_fraction = Matrix::colSums(rna[mito_genes, ]) /  
+           Matrix::colSums(rna) * 100,
+         mt_fraction_in_bound = mt_fraction &lt;= 20) %&gt;%
+  rowwise() %&gt;%
+  mutate(qc_pass = all(non_empty, sum_umis_in_bound, 
+                       detected_genes_in_bound, mt_fraction_in_bound)) %&gt;%
+  ungroup()
+
+coldata %&gt;%
+  dplyr::filter(qc_pass) %&gt;%
+  glimpse()</code></pre>
+<pre><code>## Rows: 11,319
+## Columns: 12
+## $ sample                  &lt;chr&gt; &quot;pbmc_1&quot;, &quot;pbmc_1&quot;, &quot;pbmc_1&quot;, &quot;pbmc_1&quot;, &quot;pbmc_…
+## $ barcode                 &lt;chr&gt; &quot;AAACAGCCAAGGAATC-1&quot;, &quot;AAACAGCCAATCCCTT-1&quot;, &quot;A…
+## $ sum_umis                &lt;dbl&gt; 8380, 3771, 6876, 5415, 2759, 7614, 3633, 7782…
+## $ detected_genes          &lt;dbl&gt; 3308, 1896, 2904, 2282, 1353, 3061, 1691, 3028…
+## $ non_empty               &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE…
+## $ score                   &lt;dbl&gt; 0.5405619144, 0.0034866252, 0.6318094730, 0.12…
+## $ classification          &lt;fct&gt; doublet, singlet, doublet, singlet, singlet, d…
+## $ sum_umis_in_bound       &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE…
+## $ detected_genes_in_bound &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE…
+## $ mt_fraction             &lt;dbl&gt; 7.470167, 10.527711, 6.457243, 6.500462, 6.922…
+## $ mt_fraction_in_bound    &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE…
+## $ qc_pass                 &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE…</code></pre>
+<pre class="r"><code>qc_stats_after &lt;- tibble::tibble(
+  sample = &quot;pcmbc_1&quot;,
+  barcode = colnames(rna[,coldata$barcode[coldata$qc_pass]]),
+  umis_per_cell = Matrix::colSums(rna[,coldata$barcode[coldata$qc_pass]]),
+  genes_per_cell = Matrix::colSums(rna[,coldata$barcode[coldata$qc_pass]] != 0),
+  mt_fraction = Matrix::colSums(rna[,coldata$barcode[coldata$qc_pass]][mito_genes, ]) /  Matrix::colSums(rna[,coldata$barcode[coldata$qc_pass]]) * 100
+)
+
+qc_stats_after %&gt;%
+  pivot_longer(cols = !c(sample, barcode), names_to = &quot;stat&quot;) %&gt;%
+  mutate(stat = ifelse(stat==&quot;mt_fraction&quot;, &quot;mt_fraction (%)&quot;, stat)) %&gt;%
+  ggplot() +
+  geom_violin(aes(x=sample, y=value, fill=sample)) +
+  facet_wrap(~ stat, scales = &quot;free&quot;) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = &quot;none&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+</div>
+</div>
+<div id="atac-qc" class="section level1">
+<h1>ATAC QC</h1>
+<div id="archr-arrow-files" class="section level2">
+<h2>ArchR Arrow Files</h2>
+<p>Getting the fragment files.</p>
+<pre class="r"><code>fragment_files &lt;- list.files(input_dir, full.names = TRUE)[
+  str_detect(list.files(input_dir), &quot;fragments.tsv.gz$&quot;)]
+names(fragment_files) &lt;- &quot;pbmc_1&quot;</code></pre>
+<p>Using hg19 as reference genome.</p>
+<pre class="r"><code>addArchRGenome(&quot;hg19&quot;)</code></pre>
+<pre><code>## Setting default genome to Hg19.</code></pre>
+<pre class="r"><code>addArchRThreads(threads = 1) </code></pre>
+<pre><code>## Setting default number of Parallel threads to 1.</code></pre>
+<pre class="r"><code>Sys.setenv(HDF5_USE_FILE_LOCKING=FALSE, RHDF5_USE_FILE_LOCKING=FALSE)</code></pre>
+<p>We will first create QC stats to set the thresholds</p>
+<pre class="r"><code>set.seed(s)
+min_tss &lt;- 3
+min_frags &lt;- 1000
+ArrowFiles &lt;- createArrowFiles(
+  inputFiles = fragment_files,
+  sampleNames = names(fragment_files),
+  minTSS = min_tss, # seems to be appropriate
+  minFrags = min_frags, # seems to be appropriate
+  addTileMat = TRUE,
+  addGeneScoreMat = FALSE,
+  geneAnnotation = ArchR::geneAnnoHg38,
+  genomeAnnotation = ArchR::genomeAnnoHg38, 
+  subThreading = FALSE,
+  QCDir = paste0(output_dir, &quot;Pre_Consensus_ArchR_QC&quot;),
+  offsetPlus = 4,
+  offsetMinus = -5, 
+  force = TRUE
+)</code></pre>
+<pre><code>## ArchR logging to : ArchRLogs/ArchR-createArrows-e2421a4be882-Date-2022-04-12_Time-14-10-21.log
+## If there is an issue, please report to github with logFile!</code></pre>
+<pre><code>## Cleaning Temporary Files</code></pre>
+<pre><code>## 2022-04-12 14:10:21 : Batch Execution w/ safelapply!, 0 mins elapsed.</code></pre>
+<pre><code>## (pbmc_1 : 1 of 1) Checking if completed file exists!</code></pre>
+<pre><code>## 2022-04-12 14:10:21 : (pbmc_1 : 1 of 1) Arrow Exists! Overriding since force = TRUE!, 0 mins elapsed.</code></pre>
+<pre><code>## (pbmc_1 : 1 of 1) Determining Arrow Method to use!</code></pre>
+<pre><code>## 2022-04-12 14:10:22 : (pbmc_1 : 1 of 1) Reading In Fragments from inputFiles (readMethod = tabix), 0.004 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:10:22 : (pbmc_1 : 1 of 1) Tabix Bed To Temporary File, 0.004 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:11:25 : (pbmc_1 : 1 of 1) Reading TabixFile 8 Percent, 1.069 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:12:11 : (pbmc_1 : 1 of 1) Reading TabixFile 17 Percent, 1.823 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:12:53 : (pbmc_1 : 1 of 1) Reading TabixFile 25 Percent, 2.523 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:13:30 : (pbmc_1 : 1 of 1) Reading TabixFile 33 Percent, 3.144 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:14:08 : (pbmc_1 : 1 of 1) Reading TabixFile 42 Percent, 3.77 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:14:48 : (pbmc_1 : 1 of 1) Reading TabixFile 50 Percent, 4.446 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:15:16 : (pbmc_1 : 1 of 1) Reading TabixFile 58 Percent, 4.903 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:15:48 : (pbmc_1 : 1 of 1) Reading TabixFile 67 Percent, 5.44 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:16:22 : (pbmc_1 : 1 of 1) Reading TabixFile 75 Percent, 6.014 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:16:58 : (pbmc_1 : 1 of 1) Reading TabixFile 83 Percent, 6.611 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:17:16 : (pbmc_1 : 1 of 1) Reading TabixFile 92 Percent, 6.907 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:17:34 : (pbmc_1 : 1 of 1) Reading TabixFile 100 Percent, 7.207 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:17:34 : (pbmc_1 : 1 of 1) Successful creation of Temporary File, 7.219 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:17:34 : (pbmc_1 : 1 of 1) Creating ArrowFile From Temporary File, 7.219 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:19:17 : (pbmc_1 : 1 of 1) Successful creation of Arrow File, 8.935 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:20:59 : (pbmc_1 : 1 of 1) CellStats : Number of Cells Pass Filter = 11701 , 10.636 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:20:59 : (pbmc_1 : 1 of 1) CellStats : Median Frags = 13565 , 10.636 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:20:59 : (pbmc_1 : 1 of 1) CellStats : Median TSS Enrichment = 13.597 , 10.636 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:21:02 : (pbmc_1 : 1 of 1) Adding Additional Feature Counts!, 10.672 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:22:19 : (pbmc_1 : 1 of 1) Removing Fragments from Filtered Cells, 11.963 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:22:19 : (pbmc_1 : 1 of 1) Creating Filtered Arrow File, 11.963 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:22:53 : (pbmc_1 : 1 of 1) Finished Constructing Filtered Arrow File!, 12.531 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:22:53 : (pbmc_1 : 1 of 1) Adding TileMatrix!, 12.532 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:24:34 : (pbmc_1 : 1 of 1) Finished Creating Arrow File, 14.214 mins elapsed.</code></pre>
+<pre><code>## ArchR logging successful to : ArchRLogs/ArchR-createArrows-e2421a4be882-Date-2022-04-12_Time-14-10-21.log</code></pre>
+<p>Get the QC stats</p>
+<pre class="r"><code>pre_filter_meta &lt;- purrr::map_dfr(
+  list.dirs(paste0(output_dir, &quot;Pre_Consensus_ArchR_QC&quot;), recursive = FALSE),
+  function(smp) {
+    files &lt;- list.files(smp, full.names = TRUE)
+    pre_filter &lt;- readRDS(files[str_detect(files, &quot;Pre-Filter-Metadata&quot;)])
+    as_tibble(pre_filter)
+  }) %&gt;%
+  mutate(sample = str_extract(cellNames, &quot;[^#]+(?=#[ATGC]{16})&quot;), 
+         barcode = str_extract(cellNames, &quot;[ATGC]{16}-[0-9]&quot;))</code></pre>
+<pre class="r"><code>pre_filter_meta %&gt;%
+  ggplot() +
+  geom_density2d_filled(aes(x=log10(nFrags), y=TSSEnrichment), bins=20) +
+  facet_wrap(~sample) +
+  theme(legend.position = &quot;none&quot;) +
+  labs(x = &quot;Log10 Unique Fragments&quot;, y = &quot;TSS Enrichment Score&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-24-1.png" width="1152" /></p>
+<p>Looking at the QC plots we will use the following thresholds and recreate the arrow files.</p>
+<pre class="r"><code>set.seed(s)
+min_tss &lt;- 9
+min_frags &lt;- 6200
+pre_filter_meta &lt;- pre_filter_meta %&gt;%
+  mutate(Keep = ifelse(TSSEnrichment &gt; min_tss &amp; nFrags &gt; min_frags, 1, 0))
+ArrowFiles &lt;- createArrowFiles(
+  inputFiles = fragment_files,
+  sampleNames = names(fragment_files),
+  minTSS = min_tss, # seems to be appropriate
+  minFrags = min_frags, # seems to be appropriate
+  addTileMat = TRUE,
+  addGeneScoreMat = TRUE,
+  geneAnnotation = ArchR::geneAnnoHg38,
+  genomeAnnotation = ArchR::genomeAnnoHg38, 
+  subThreading = FALSE,
+  QCDir = paste0(output_dir, &quot;Consensus_ArchR_QC&quot;),
+  offsetPlus = 4,
+  offsetMinus = -5, 
+  force = TRUE
+)</code></pre>
+<pre><code>## ArchR logging to : ArchRLogs/ArchR-createArrows-e2426ff25dd6-Date-2022-04-12_Time-14-24-35.log
+## If there is an issue, please report to github with logFile!</code></pre>
+<pre><code>## Cleaning Temporary Files</code></pre>
+<pre><code>## 2022-04-12 14:24:35 : Batch Execution w/ safelapply!, 0 mins elapsed.</code></pre>
+<pre><code>## (pbmc_1 : 1 of 1) Checking if completed file exists!</code></pre>
+<pre><code>## 2022-04-12 14:24:35 : (pbmc_1 : 1 of 1) Arrow Exists! Overriding since force = TRUE!, 0 mins elapsed.</code></pre>
+<pre><code>## (pbmc_1 : 1 of 1) Determining Arrow Method to use!</code></pre>
+<pre><code>## 2022-04-12 14:24:35 : (pbmc_1 : 1 of 1) Reading In Fragments from inputFiles (readMethod = tabix), 0.003 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:24:35 : (pbmc_1 : 1 of 1) Tabix Bed To Temporary File, 0.003 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:25:36 : (pbmc_1 : 1 of 1) Reading TabixFile 8 Percent, 1.011 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:26:20 : (pbmc_1 : 1 of 1) Reading TabixFile 17 Percent, 1.758 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:27:02 : (pbmc_1 : 1 of 1) Reading TabixFile 25 Percent, 2.453 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:27:39 : (pbmc_1 : 1 of 1) Reading TabixFile 33 Percent, 3.068 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:28:16 : (pbmc_1 : 1 of 1) Reading TabixFile 42 Percent, 3.686 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:28:56 : (pbmc_1 : 1 of 1) Reading TabixFile 50 Percent, 4.358 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:29:24 : (pbmc_1 : 1 of 1) Reading TabixFile 58 Percent, 4.811 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:29:56 : (pbmc_1 : 1 of 1) Reading TabixFile 67 Percent, 5.344 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:30:30 : (pbmc_1 : 1 of 1) Reading TabixFile 75 Percent, 5.916 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:31:06 : (pbmc_1 : 1 of 1) Reading TabixFile 83 Percent, 6.511 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:31:23 : (pbmc_1 : 1 of 1) Reading TabixFile 92 Percent, 6.807 mins elapsed.</code></pre>
+<pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
+## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
+<pre><code>## 2022-04-12 14:31:41 : (pbmc_1 : 1 of 1) Reading TabixFile 100 Percent, 7.107 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:31:42 : (pbmc_1 : 1 of 1) Successful creation of Temporary File, 7.119 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:31:42 : (pbmc_1 : 1 of 1) Creating ArrowFile From Temporary File, 7.119 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:33:23 : (pbmc_1 : 1 of 1) Successful creation of Arrow File, 8.802 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:35:03 : (pbmc_1 : 1 of 1) CellStats : Number of Cells Pass Filter = 9969 , 10.461 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:35:03 : (pbmc_1 : 1 of 1) CellStats : Median Frags = 14261 , 10.461 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:35:03 : (pbmc_1 : 1 of 1) CellStats : Median TSS Enrichment = 13.672 , 10.461 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:35:04 : (pbmc_1 : 1 of 1) Adding Additional Feature Counts!, 10.493 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:36:20 : (pbmc_1 : 1 of 1) Removing Fragments from Filtered Cells, 11.759 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:36:20 : (pbmc_1 : 1 of 1) Creating Filtered Arrow File, 11.759 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:36:52 : (pbmc_1 : 1 of 1) Finished Constructing Filtered Arrow File!, 12.288 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:36:52 : (pbmc_1 : 1 of 1) Adding TileMatrix!, 12.289 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:38:25 : (pbmc_1 : 1 of 1) Adding GeneScoreMatrix!, 13.832 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:40:37 : (pbmc_1 : 1 of 1) Finished Creating Arrow File, 16.031 mins elapsed.</code></pre>
+<pre><code>## ArchR logging successful to : ArchRLogs/ArchR-createArrows-e2426ff25dd6-Date-2022-04-12_Time-14-24-35.log</code></pre>
+<p>We will also check for doublets here.</p>
+<pre class="r"><code>doublet_scores_atac &lt;- addDoubletScores(
+  input = ArrowFiles,
+  k = 10, #Refers to how many cells near a &quot;pseudo-doublet&quot; to count.
+  knnMethod = &quot;UMAP&quot;, #Refers to the embedding to use for nearest neighbor search.
+  LSIMethod = 1,
+  outDir = paste0(output_dir, &quot;Consensus_ArchR_QC&quot;), 
+  force = TRUE
+)</code></pre>
+<pre><code>## Warning: `guides(&lt;scale&gt; = FALSE)` is deprecated. Please use `guides(&lt;scale&gt; =
+## &quot;none&quot;)` instead.</code></pre>
+<p>We will also add the ATAC doublet scores to our coldata.</p>
+<pre class="r"><code>doublet_scores_tibble_atac &lt;- purrr::map_dfr(doublet_scores_atac, function(smp) {
+  tibble::tibble(joint_barcode = names(smp$doubletScore),
+                 dbl_score_atac = smp$doubletScore,
+                 dbl_enrich_atac = smp$doubletEnrich)
+  }) %&gt;%
+  mutate(sample = str_extract(joint_barcode, &quot;[^#]+(?=#[ATGC]{16})&quot;), 
+         barcode = str_extract(joint_barcode, &quot;[ATGC]{16}-[0-9]&quot;),
+         joint_barcode = NULL)
+
+coldata &lt;- coldata %&gt;%
+  left_join(doublet_scores_tibble_atac, by=c(&quot;sample&quot;, &quot;barcode&quot;))</code></pre>
+</div>
+<div id="create-archr-project" class="section level2">
+<h2>Create ArchR Project</h2>
+<p>Since we do not have to compute doublet scores (at least I don’t quite see the point if we already did so with the snRNA-seq data), we directly move on to create the ArchR Project (and we will save it just in case)</p>
+<pre class="r"><code>proj &lt;- ArchRProject(
+  ArrowFiles = ArrowFiles, 
+  outputDirectory = paste0(output_dir, &quot;ConsensusQC_ArchR_PROJ&quot;),
+  copyArrows = TRUE, #This is recommended so that you maintain an unaltered copy for later usage.
+  geneAnnotation = ArchR::geneAnnoHg38,
+  genomeAnnotation = ArchR::genomeAnnoHg38
+)</code></pre>
+</div>
+<div id="qc-statistics-1" class="section level2">
+<h2>QC Statistics</h2>
+<p>Plotting the TSS Enrichment Score vs the log10 Unique Fragments. The QC thresholds indicated by the dashed green line. So we are only subsetting using the TSS Enrichment Score and not the number of unique fragments per cell.</p>
+<pre class="r"><code>pre_filter_meta %&gt;%
+  ggplot() +
+  geom_density2d_filled(aes(x=log10(nFrags), y=TSSEnrichment), bins=20) +
+  geom_hline(yintercept = min_tss, color=&quot;green&quot;, linetype=&quot;dashed&quot;) +
+  geom_vline(xintercept = log10(min_frags), color=&quot;green&quot;, linetype=&quot;dashed&quot;) +
+  #geom_xsidedensity(aes(x=log10(pre_filter_meta$nFrags))) +
+  #geom_ysidedensity(aes(y = pre_filter_meta$TSSEnrichment)) +
+  facet_wrap(~sample) +
+  theme(legend.position = &quot;none&quot;) +
+  labs(x = &quot;Log10 Unique Fragments&quot;, y = &quot;TSS Enrichment Score&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-29-1.png" width="1152" /></p>
+<p>Also looking at the marginal distriubtions (for some reason it is impossible to have the h/vline as well as the marginals in one plot).</p>
+<pre class="r"><code>pre_filter_meta %&gt;%
+  ggplot() +
+  geom_density2d_filled(aes(x=log10(nFrags), y=TSSEnrichment), bins=20) +
+  #geom_hline(yintercept = 2.5, color=&quot;green&quot;, linetype=&quot;dashed&quot;) +
+  #geom_vline(xintercept = log10(2000), color=&quot;green&quot;, linetype=&quot;dashed&quot;) +
+  geom_xsidedensity(aes(x=log10(pre_filter_meta$nFrags))) +
+  geom_ysidedensity(aes(y = pre_filter_meta$TSSEnrichment)) +
+  facet_wrap(~sample) +
+  theme(legend.position = &quot;none&quot;) +
+  labs(x = &quot;Log10 Unique Fragments&quot;, y = &quot;TSS Enrichment Score&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-30-1.png" width="1152" /></p>
+<p>Distribution of the TSS enrichment scores. Especially sample “sm027_Tel_5c” looks a little bit different than the other 2 samples.</p>
+<pre class="r"><code>pre_filter_meta %&gt;%
+  ggplot() +
+  geom_density(aes(x=TSSEnrichment, fill=sample), alpha=0.5) +
+  labs(x = &quot;TSS Enrichment Score&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-31-1.png" width="960" /></p>
+<p>Distribution of the log10 unique fragments. Again “sm027_Tel_5c” looks different as it the number of unique fragments per cell is genereally a little bit higher.</p>
+<pre class="r"><code>pre_filter_meta %&gt;%
+  ggplot() +
+  geom_density(aes(x=log10(nFrags), fill=sample), alpha=0.5) +
+  labs(x = &quot;Log10 Unique Fragments&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-32-1.png" width="960" /></p>
+<p>We will also check the Fragment Size Distribution.</p>
+<pre class="r"><code>ArchR::addArchRThreads(1)
+fragment_sizes &lt;- plotFragmentSizes(ArchRProj = proj, groupBy = &quot;Sample&quot;, 
+                  returnDF = TRUE)</code></pre>
+<p>And we see that the fragment sizes of all samples are very similar which is a good sign! We clearly see the peaks for 1, 2, and 3 nucleosomes.</p>
+<pre class="r"><code>tibble::as_tibble(fragment_sizes) %&gt;%
+  ggplot() +
+  geom_line(aes(x=fragmentSize, y=fragmentPercent, color=group), alpha=0.8) +
+  labs(x = &quot;Fragment Size&quot;, y = &quot;Density&quot;, color = &quot;Sample&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-34-1.png" width="768" /></p>
+<p>We will also look at the TSS enrichment profile.</p>
+<pre class="r"><code>ArchR::addArchRThreads(1) # preventing file lock errors (unable to assess hdf5)</code></pre>
+<pre><code>## Setting default number of Parallel threads to 1.</code></pre>
+<pre class="r"><code>tss_enrichment &lt;- plotTSSEnrichment(ArchRProj = proj, groupBy = &quot;Sample&quot;, 
+                                    returnDF = TRUE)</code></pre>
+<pre><code>## ArchR logging to : ArchRLogs/ArchR-plotTSSEnrichment-e24264b20f7a-Date-2022-04-12_Time-14-45-25.log
+## If there is an issue, please report to github with logFile!</code></pre>
+<pre><code>## 2022-04-12 14:45:26 : pbmc_1 Computing TSS (1 of 1)!, 0.003 mins elapsed.</code></pre>
+<pre><code>## 2022-04-12 14:47:19 : pbmc_1 Finished Computing TSS (1 of 1)!, 1.89 mins elapsed.</code></pre>
+<pre><code>## ArchR logging successful to : ArchRLogs/ArchR-plotTSSEnrichment-e24264b20f7a-Date-2022-04-12_Time-14-45-25.log</code></pre>
+<pre class="r"><code>tibble::as_tibble(tss_enrichment) %&gt;%
+  ggplot() +
+  geom_line(aes(x=x, y=smoothValue, color=group)) +
+  labs(x = &quot;Distance From Center (bp)&quot;, y = &quot;Normalized Insertion Profile&quot;,
+       color = &quot;Sample&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-36-1.png" width="768" /></p>
+<p>Lastly we will add the ATAC QC statistics to our coldata</p>
+<pre class="r"><code>coldata &lt;- coldata %&gt;%
+  left_join(pre_filter_meta, by=c(&quot;sample&quot;, &quot;barcode&quot;))</code></pre>
+</div>
+</div>
+<div id="consensual-subsetting" class="section level1">
+<h1>Consensual Subsetting</h1>
+<div id="pass-rna-qc-atac-qc" class="section level2">
+<h2>Pass RNA-QC &amp; ATAC-QC</h2>
+<p>How many cells pass both the snRNA-seq and snATAC-seq Quality Control? And in the cells that remain what are the proportions of the samples (see most right column).</p>
+<pre class="r"><code>coldata %&gt;%
+  filter(Keep == 1, qc_pass) %&gt;%
+  nrow()</code></pre>
+<pre><code>## [1] 9522</code></pre>
+<p>How do these cells look like? Let’s also plot some snRNA QC stats vs snATAC QC stats using cells which passes both QC filters. Also adding a loess fit to the scatterplots below.</p>
+<p>First we will simply look at the number of detected genes vs the sum of UMIs. Consering this highly positive association, we will only compare the ATAC-QC scores to the sum of UMIs below, as using the number of detected genes for comparisons will lead to very similar plots (which I also tested).</p>
+<pre class="r"><code>coldata %&gt;%
+  filter(Keep == 1, qc_pass) %&gt;%
+  ggplot(aes(x = sum_umis, y = detected_genes)) +
+  geom_point(alpha=0.2, size=0.2) +
+  geom_smooth(formula = y ~ x, method=&quot;loess&quot;) +
+  facet_wrap(~ sample) +
+  labs(x = &quot;Sum UMIs&quot;, y = &quot;Detected Genes&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-39-1.png" width="960" /></p>
+<p>Next up, we will compare the log10 of unique fragments per cell vs the log10 of UMIs. And we see that there is a pretty linear relationship between these numbers. We further see that marginal distribution of the log10 of unique fragments is much more narrow compared to the log10 of UMIs.</p>
+<pre class="r"><code>coldata %&gt;%
+  filter(Keep == 1, qc_pass) %&gt;%
+  ggplot(aes(x = log10(sum_umis), y = log10(nFrags))) +
+  geom_point(alpha=0.2, size=0.2) +
+  geom_smooth(formula = y ~ x, method=&quot;loess&quot;) +
+  geom_xsidedensity() +
+  geom_ysidedensity() +
+  facet_wrap(~ sample) +
+  labs(x = &quot;Log10 UMIs&quot;, y = &quot;Log10 Unique Fragments&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-40-1.png" width="1152" /></p>
+<p>Next up, we will compare the TSS Enrichment Score vs the sum of UMIs. Generally the number TSS Enrichment Score decreases with an increasing number of UMIs.</p>
+<pre class="r"><code>coldata %&gt;%
+  filter(Keep == 1, qc_pass) %&gt;%
+  ggplot(aes(x = log10(sum_umis), y = TSSEnrichment)) +
+  geom_point(alpha=0.2, size=0.2) +
+  geom_smooth(formula = y ~ x, method=&quot;loess&quot;) +
+  geom_xsidedensity() +
+  geom_ysidedensity() +
+  facet_wrap(~ sample) +
+  labs(x = &quot;Log10 Sum UMIs&quot;, y = &quot;TSS Enrichment Score&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-41-1.png" width="1152" /></p>
+</div>
+<div id="pass-only-one-entity" class="section level2">
+<h2>Pass Only One Entity</h2>
+<p>How many cells pass the snRNA QC but not snATAC QC?</p>
+<pre class="r"><code>coldata %&gt;%
+  filter(Keep == 0, qc_pass) %&gt;%
+  nrow()</code></pre>
+<pre><code>## [1] 1280</code></pre>
+<p>How many cells pass the snATAC QC but not snRNA QC?</p>
+<pre class="r"><code>coldata %&gt;%
+  filter(Keep == 1, qc_pass == FALSE) %&gt;%
+  nrow()</code></pre>
+<pre><code>## [1] 110</code></pre>
+<p>Let’s check the classifications in the TSS Enrichment Scores vs Log10 UMIs plot (and the Log10 Unique Fragments vs Log19 UMIs plot). And we see two simple things.</p>
+<p>Cells that pass RNA-QC, but not ATAC-QC have a TSS Enrichment Score which is too low.</p>
+<p>Cell that pass QTAC-QC, but not RNA-QC either have too little UMIs (mostly) or too many UMIs.</p>
+<pre class="r"><code>p1 &lt;- coldata %&gt;%
+  mutate(col = case_when(
+    qc_pass == TRUE &amp; Keep == 1 ~ &quot;Both&quot;,
+    qc_pass == TRUE &amp; Keep == 0 ~ &quot;Only RNA&quot;,
+    qc_pass == FALSE &amp; Keep == 1 ~ &quot;Only ATAC&quot;,
+    qc_pass == FALSE &amp; Keep == 0 ~ &quot;None&quot;,
+  )) %&gt;%
+  ggplot(aes(x = log10(sum_umis), TSSEnrichment)) +
+  geom_point(aes(color = col), size = 0.4, alpha = 0.4) +
+  scale_color_manual(values = c(&quot;Both&quot; = &quot;forestgreen&quot;,
+                                &quot;Only RNA&quot; = &quot;blue&quot;,
+                                &quot;Only ATAC&quot; = &quot;orange&quot;,
+                                &quot;None&quot; = &quot;grey&quot;)) +
+  labs(x = &quot;Log10 Sum UMIs&quot;, y = &quot;TSS Enrichment Score&quot;, color = &quot;Classification&quot;) +
+  guides(colour = guide_legend(override.aes = list(size = 2)))
+
+p2 &lt;- coldata %&gt;%
+  mutate(col = case_when(
+    qc_pass == TRUE &amp; Keep == 1 ~ &quot;Both&quot;,
+    qc_pass == TRUE &amp; Keep == 0 ~ &quot;Only RNA&quot;,
+    qc_pass == FALSE &amp; Keep == 1 ~ &quot;Only ATAC&quot;,
+    qc_pass == FALSE &amp; Keep == 0 ~ &quot;None&quot;,
+  )) %&gt;%
+  ggplot(aes(x = log10(sum_umis), log10(nFrags))) +
+  geom_point(aes(color = col), size = 0.4, alpha = 0.4) +
+  scale_color_manual(values = c(&quot;Both&quot; = &quot;forestgreen&quot;,
+                                &quot;Only RNA&quot; = &quot;blue&quot;,
+                                &quot;Only ATAC&quot; = &quot;orange&quot;,
+                                &quot;None&quot; = &quot;gray&quot;)) +
+  labs(x = &quot;Log10 Sum UMIs&quot;, y = &quot;Log10 Unique Fragments&quot;, color = &quot;Classification&quot;) +
+  guides(colour = guide_legend(override.aes = list(size = 2))) 
+
+cowplot::plot_grid(p1, p2, ncol=2)</code></pre>
+<pre><code>## Warning: Removed 564 rows containing missing values (geom_point).
+## Removed 564 rows containing missing values (geom_point).</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-44-1.png" width="1152" /></p>
+<p>Now we might focus on the cells which pass RNA-QC but not ATAC-QC, and look at these cells in the ATAC-QC plots.</p>
+<p>How do these cells look like in the snATAC QC? These cells are filtered out because their TSS enrichment is too low (as we have seen above). Also consider that there are 3820 for which ATAC statistics are not even available.</p>
+<pre class="r"><code>coldata %&gt;%
+  filter(qc_pass) %&gt;%
+  mutate(PASS_ATAC_QC = ifelse(Keep == 1, TRUE, FALSE)) %&gt;%
+  ggplot() +
+  geom_point(aes(y=TSSEnrichment, x=log10(nFrags), color=factor(PASS_ATAC_QC)), 
+             size = 0.6, alpha = 0.4) +
+  facet_wrap(~ sample) +
+  labs(color = &quot;PASS ATAC QC&quot;, x = &quot;Log10 Unique Fragments&quot;, 
+       y = &quot;TSS Enrichment Score&quot;) +
+  guides(colour = guide_legend(override.aes = list(size = 2)))</code></pre>
+<pre><code>## Warning: Removed 517 rows containing missing values (geom_point).</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-45-1.png" width="960" /></p>
+<p>One the other hand, how do cells that pass the ATAC-QC, but not the RNA-QC look like in the RNA-QC plots. The cells fail the snRNA-QC because they mostly have too few UMIs, meaning they are considered to be empty (as we have seen above already).</p>
+<pre class="r"><code>coldata %&gt;%
+  filter(Keep == 1) %&gt;%
+  mutate(sample = str_remove(sample, &quot;[0-9]{8}&quot;)) %&gt;%
+  pivot_longer(cols=c(sum_umis, detected_genes), 
+               names_to = &quot;qc_stat&quot;, values_to = &quot;value&quot;) %&gt;%
+  ggplot() +
+  geom_violin(aes(x=sample, y=value, fill=sample)) +
+  facet_wrap(~ qc_stat + qc_pass) +
+  theme(legend.position = &quot;none&quot;) +
+  scale_y_log10() +
+  labs(x = &quot;Sample&quot;, y = &quot;Log10 Statistic&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-46-1.png" width="768" /></p>
+</div>
+<div id="consensus-barcodes" class="section level2">
+<h2>Consensus Barcodes</h2>
+<p>Let’s get the consensus barcodes and subset everything accordingly.</p>
+<pre class="r"><code>consensus_barcodes &lt;- coldata %&gt;%
+  filter(qc_pass, Keep == 1) %&gt;%
+  pull(barcode)</code></pre>
+<pre class="r"><code># consensus RNA
+consensus_rna &lt;- rna[, consensus_barcodes]
+stopifnot(ncol(consensus_rna) == length(consensus_barcodes))
+dim(consensus_rna)</code></pre>
+<pre><code>## [1] 29972  9522</code></pre>
+<pre class="r"><code># conensus ATAC
+proj$barcodes &lt;- str_remove(proj$cellNames, &quot;[^#]+#&quot;)
+consensus_proj &lt;- proj[proj$barcodes %in% consensus_barcodes, ]
+stopifnot(nrow(ArchR::getCellColData(consensus_proj)) ==
+            length(consensus_barcodes))
+dim(ArchR::getCellColData(consensus_proj))</code></pre>
+<pre><code>## [1] 9522   16</code></pre>
+</div>
+</div>
+<div id="comparing-doublet-scores" class="section level1">
+<h1>Comparing Doublet Scores</h1>
+<div id="scdblfinder-score-vs.-archr-doublet-score" class="section level2">
+<h2>scDblFinder Score vs. ArchR Doublet Score</h2>
+<p>Comparing the doublet scores (for cells in which we have scores for both entities). First we will simply do the scatterplot which severely suffers from overplotting. However looking at the marginal distributions we clearly see that most cells have a very low doublet score in both entities. However in the top left corncer and the bottom right corner we have quite a few cells for which the scores are opposite. Let us quantify that notion by splitting up the plot below into 4 quadrants, thus classifying cells to have either a low doublet score in both entities, a high score in both entities or a high score in one and a low score in the other entity.</p>
+<pre class="r"><code>coldata %&gt;%
+  filter(non_empty) %&gt;%
+  drop_na() %&gt;%
+  ggplot(aes(x=score, y=dbl_score_atac)) +
+  geom_smooth(formula = y ~ x, method=&quot;lm&quot;) +
+  geom_point(size=0.2, alpha=0.1) +
+  geom_xsidedensity(aes(y = after_stat(density))) +
+  geom_ysidedensity(aes(x = after_stat(density))) +
+  theme(legend.position = &quot;none&quot;) +
+  labs(x = &quot;RNA Doublet Score&quot;, y = &quot;ATAC Doublet Score&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-49-1.png" width="768" /></p>
+<p>So we will make the split at ATAC doublet score of 150 and RNA doublet score of 0.5.</p>
+<pre class="r"><code>coldata %&gt;%
+  filter(non_empty) %&gt;%
+  drop_na() %&gt;%
+  mutate(classification = dplyr::case_when(
+    dbl_score_atac &gt; 150 &amp; score &gt; 0.5 ~ &quot;RNA_high_ATAC_high&quot;,
+    dbl_score_atac &lt; 150 &amp; score &gt; 0.5 ~ &quot;RNA_high_ATAC_low&quot;,
+    dbl_score_atac &gt; 150 &amp; score &lt; 0.5 ~ &quot;RNA_low_ATAC_high&quot;,
+    dbl_score_atac &lt; 150 &amp; score &lt; 0.5 ~ &quot;RNA_low_ATAC_low&quot;
+  )) %&gt;%
+  ggplot() +
+  geom_point(aes(x=score, y=dbl_score_atac, color=classification),
+             size=0.4, alpha=0.4) +
+  guides(colour = guide_legend(override.aes = list(size = 2))) +
+  labs(x = &quot;RNA Doublet Score&quot;, y = &quot;ATAC Doublet Score&quot;)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-50-1.png" width="768" /></p>
+<p>Let’s compute the numbers and fractions for each category. And we see that the frraction of high RNA doublet score but low ATAC doublets score is quite large.</p>
+<pre class="r"><code>coldata %&gt;%
+  filter(non_empty) %&gt;%
+  drop_na() %&gt;%
+  mutate(classification = dplyr::case_when(
+    dbl_score_atac &gt; 150 &amp; score &gt; 0.5 ~ &quot;RNA_high_ATAC_high&quot;,
+    dbl_score_atac &lt; 150 &amp; score &gt; 0.5 ~ &quot;RNA_high_ATAC_low&quot;,
+    dbl_score_atac &gt; 150 &amp; score &lt; 0.5 ~ &quot;RNA_low_ATAC_high&quot;,
+    dbl_score_atac &lt; 150 &amp; score &lt; 0.5 ~ &quot;RNA_low_ATAC_low&quot;
+  )) %&gt;%
+  group_by(classification) %&gt;%
+  summarise(total_number = n()) %&gt;%
+  mutate(fraction = round(total_number / sum(total_number) * 100, 2))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["classification"],"name":[1],"type":["chr"],"align":["left"]},{"label":["total_number"],"name":[2],"type":["int"],"align":["right"]},{"label":["fraction"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"RNA_high_ATAC_high","2":"458","3":"4.75"},{"1":"RNA_high_ATAC_low","2":"524","3":"5.44"},{"1":"RNA_low_ATAC_high","2":"19","3":"0.20"},{"1":"RNA_low_ATAC_low","2":"8632","3":"89.61"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Let’s also have a look at the RNA doublet score in the log10 unique fragments vs log10 UMIs plot. We basically see that the RNA doublets score seems to be enriched in cells with high number of unique fragments and UMIs.</p>
+<pre class="r"><code>coldata %&gt;%
+  filter(Keep == 1, qc_pass) %&gt;%
+  ggplot(aes(x = log10(sum_umis), y = log10(nFrags), color = score)) +
+  geom_point(alpha=0.6, size=0.6) +
+  geom_smooth(formula = y ~ x, method=&quot;loess&quot;) +
+  facet_wrap(~ sample) +
+  labs(x = &quot;Log10 UMIs&quot;, y = &quot;Log10 Unique Fragments&quot;, color = &quot;Doublet \nScore RNA&quot;) +
+  scale_color_viridis_c()</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-52-1.png" width="1152" /></p>
+<p>And the ATAC doublet score as well.</p>
+<pre class="r"><code>coldata %&gt;%
+  filter(Keep == 1, qc_pass) %&gt;%
+  ggplot(aes(x = log10(sum_umis), y = log10(nFrags), color = dbl_score_atac)) +
+  geom_point(alpha=0.6, size=0.6) +
+  geom_smooth(formula = y ~ x, method=&quot;loess&quot;) +
+  facet_wrap(~ sample) +
+  labs(x = &quot;Log10 UMIs&quot;, y = &quot;Log10 Unique Fragments&quot;, color = &quot;Doublet \nScore ATAC&quot;) +
+  scale_color_viridis_c()</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-53-1.png" width="1152" /></p>
+</div>
+</div>
+<div id="removing-doublets" class="section level1">
+<h1>Removing Doublets</h1>
+<p>Lastly we will remove putative doublets. Therefore we will mainly use the <code>scDblFinder</code> Doublet Score (since it is very confident with the doublet assignment and performed goo din the latest benchmark). From each sample we will choose the top 8% according to this statistic.</p>
+<p>Additionally, we will consider all cell to be doublets which have an ArchR Doublet Enrichment above 10.</p>
+<pre class="r"><code>prop &lt;- 0.08
+archr_thr &lt;- 20</code></pre>
+<pre class="r"><code>doublet_barcodes_scdbl &lt;- coldata %&gt;%
+  filter(non_empty) %&gt;%
+  group_by(sample) %&gt;%
+  slice_max(order_by=score, prop=prop, with_ties=TRUE) %&gt;%
+  pull(barcode)
+  
+doublet_barcodes_archr &lt;- coldata %&gt;%
+  filter(dbl_score_atac &gt; archr_thr) %&gt;%
+  pull(barcode)
+
+doublet_barcodes &lt;- dplyr::union(doublet_barcodes_scdbl, doublet_barcodes_archr)
+paste0(&quot;In total &quot;, length(doublet_barcodes), &quot; doublets will be removed&quot;)</code></pre>
+<pre><code>## [1] &quot;In total 1051 doublets will be removed&quot;</code></pre>
+<p>Add to column data.</p>
+<pre class="r"><code>coldata &lt;- coldata %&gt;%
+  mutate(is_doublet = barcode %in% doublet_barcodes)</code></pre>
+<p>How many cells are we removing from each sample?</p>
+<pre class="r"><code>coldata %&gt;%
+  filter(non_empty) %&gt;%
+  dplyr::count(sample, is_doublet) %&gt;%
+  group_by(sample) %&gt;%
+  mutate(frac = round(n / sum(n) * 100, 2))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["sample"],"name":[1],"type":["chr"],"align":["left"]},{"label":["is_doublet"],"name":[2],"type":["lgl"],"align":["right"]},{"label":["n"],"name":[3],"type":["int"],"align":["right"]},{"label":["frac"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"pbmc_1","2":"FALSE","3":"10449","4":"90.86"},{"1":"pbmc_1","2":"TRUE","3":"1051","4":"9.14"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Check the putative doublets in our plots. And everything looks as expected.</p>
+<pre class="r"><code>coldata %&gt;%
+  filter(non_empty) %&gt;%
+  drop_na() %&gt;%
+  ggplot(aes(x=score, y=dbl_score_atac)) +
+  geom_point(aes(color=is_doublet), size=0.4, alpha=0.4) +
+  geom_xsidedensity(aes(y = after_stat(density))) +
+  geom_ysidedensity(aes(x = after_stat(density))) +
+  facet_wrap(~ sample) +
+  labs(x = &quot;scDblFinder Score&quot;, y = &quot;ArchR Doublet Enrichment&quot;,
+       color = &quot;Considered \nDoublet?&quot;) +
+  guides(colour = guide_legend(override.aes = list(size = 2)))</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-58-1.png" width="576" /></p>
+<p>Looking at the marginal distributions, we can nicely see that the distribution of the putative doublets are shifted towards higher numbers of UMIs and unique fragments, which is expected.</p>
+<pre class="r"><code>coldata %&gt;%
+  filter(Keep == 1, qc_pass) %&gt;%
+  ggplot(aes(x = log10(sum_umis), y = log10(nFrags), color = is_doublet)) +
+  geom_point(alpha=0.6, size=0.6) +
+  geom_xsidedensity(aes(y = after_stat(density))) +
+  geom_ysidedensity(aes(x = after_stat(density))) +
+  facet_wrap(~ sample) +
+  labs(x = &quot;Log10 UMIs&quot;, y = &quot;Log10 Unique Fragments&quot;, 
+       color = &quot;Considered \nDoublet?&quot;) +
+  guides(colour = guide_legend(override.aes = list(size = 2)))</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-59-1.png" width="1152" /></p>
+<p>Subsetting the count matrix.</p>
+<pre class="r"><code>dim(consensus_rna)</code></pre>
+<pre><code>## [1] 29972  9522</code></pre>
+<pre class="r"><code>consensus_rna_dbl &lt;- consensus_rna[, !(colnames(consensus_rna) %in% doublet_barcodes)]
+dim(consensus_rna_dbl)</code></pre>
+<pre><code>## [1] 29972  8605</code></pre>
+<pre class="r"><code>dim(ArchR::getCellColData(consensus_proj))</code></pre>
+<pre><code>## [1] 9522   16</code></pre>
+<pre class="r"><code>consensus_proj_dbl &lt;- consensus_proj[!(consensus_proj$barcodes %in% doublet_barcodes), ]
+dim(ArchR::getCellColData(consensus_proj_dbl))</code></pre>
+<pre><code>## [1] 8605   16</code></pre>
+</div>
+<div id="saving" class="section level1">
+<h1>Saving</h1>
+<pre class="r"><code>saveRDS(rna_raw, 
+        paste0(output_dir, timestamp, &quot;_tel_rna_raw.RDS&quot;))
+saveRDS(consensus_rna, 
+        paste0(output_dir, timestamp, &quot;_rna_consensus.RDS&quot;))
+saveRDS(consensus_rna_dbl, 
+        paste0(output_dir, timestamp, &quot;_rna_consensus_dbl.RDS&quot;))
+
+saveArchRProject(ArchRProj = proj, 
+                 outputDirectory = paste0(output_dir, &quot;ConsensusQC_ArchR_PROJ&quot;), 
+                 load = FALSE)
+saveArchRProject(ArchRProj = consensus_proj, 
+                 outputDirectory = paste0(output_dir, &quot;Consensus_ArchR_PROJ&quot;), 
+                 load = FALSE)
+saveArchRProject(ArchRProj = consensus_proj_dbl, 
+                 outputDirectory = paste0(output_dir, &quot;Consensus_dbl_ArchR_PROJ&quot;), 
+                 load = FALSE)
+
+saveRDS(coldata, 
+        paste0(output_dir, timestamp, &quot;_coldata_after_QC.RDS&quot;))
+
+save.image(file = &quot;Latest_Consensus_QC.RData&quot;)</code></pre>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+<div id="refs" class="references csl-bib-body">
+<div id="ref-10.1042/etls20210074" class="csl-entry">
+<div class="csl-left-margin">1. </div><div class="csl-right-inline">J. Fischer, T. Ayers, <span class="nocase">Single nucleus RNA-sequencing: how it’s done, applications and limitations</span>. <em>Emerging Topics in Life Sciences</em>. <strong>5</strong>, 687–690 (2021).</div>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

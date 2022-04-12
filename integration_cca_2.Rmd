@@ -61,29 +61,27 @@ Gregory W. Gundersen (http://gregorygundersen.com/publications/gundersen2021thes
 
 Given two datasets $X$ and $Y$, 
 
-* $X \in \mathbb{R}^{N \times M}$ with observation $g = 1,...N$ and features $Q^A_c$ with $c=1,...,M$
+* $X \in \mathbb{R}^{N \times M}$ with $N$ observation and $M$ features.
 
-* $Y \in \mathbb{R}^{N \times P}$ with observation $g = 1,...N$ and features $Q^B_d$ with $d=1,...,P$
+* $Y \in \mathbb{R}^{N \times P}$ with $N$ observations and $P$ features.
 
-Our goal is to find linear combinations of the columns of $X$ and $Y$, such that the resulting vectors of length $N$ are maximally correlated.
-
-In mathematical terms we seek to find the canonical correlation vectors $\hat{h_X}$ and $\hat{h_Y}$ such that $X \hat{h_X}$ and $Y \hat{h_Y}$ are maximally correlated.
+Our goal is to find linear combinations of the columns of $X$ and $Y$, such that the resulting vectors of length $N$ are maximally correlated. In other words, we seek to find the canonical correlation vectors $\hat{h_X}$ and $\hat{h_Y}$ such that $X \hat{h_X}$ and $Y \hat{h_Y}$ are maximally correlated.
 
 $$
 \hat{h_X}, \hat{h_Y} = \arg\max_{h_X, h_Y} corr(X h_X, Y h_Y)
 $$
 
-Why are we even interested in that? An example would be to compare the loadings in a pair of canonical vectors  $\hat{h_X}$, $\hat{h_Y}$ : Features from $X$ that have a high absolute loading in  $\hat{h_X}$, and features from $Y$ that have a high absolute loading in $\hat{h_Y}$ show some pattern of covariation because they might be based on the same latent factors (e.g. personality traits).
+Why are we even interested in that? An example would be to compare the loadings in a pair of canonical vectors  $\hat{h_X}$, $\hat{h_Y}$ : Features from $X$ that have a high absolute loading in  $\hat{h_X}$, and features from $Y$ that have a high absolute loading in $\hat{h_Y}$ show some pattern of co-variation because they might be based on the same latent factors (e.g. personality traits).
 
 # Classic Example
 
-So get an intuition for CCA, we will look at a rather classical example.
+To get an intuition for CCA, we will look at a rather classical example.
 
 ## Data & Questions
 
 We will download the questions that were used for the development of the Multidimensional Introversion-Extraversion Scales (see here: https://openpsychometrics.org/_rawdata).
 
-The test contained 91 questions about the personality of the participants. We remove Q44 which is doubled.
+The test contains 91 questions about the personality of the participants. We remove Q44 which is apparently doubled.
 
 ```{r}
 if (!any(str_detect(list.dirs("/mnt/sda/data", recursive = FALSE), 
@@ -560,8 +558,6 @@ However, in Stuart et al. (2019) [@10.1016/j.cell.2019.05.031] the procedure was
 We will use here the data from the following publication:
 
 Liao, M. et al. Single-cell landscape of bronchoalveolar immune cells in patients with COVID-19. Nat Med 26, 842–844 (2020). [@10.1038/s41591-020-0901-9]
-
-We will integrate two cov19 samples.
 
 ```{r}
 rna_list <- readRDS("cov19_balf_gex_qc_output/2022-04-10-11-26_rna_list_filtered.RDS") %>%

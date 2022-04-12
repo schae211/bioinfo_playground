@@ -1,0 +1,413 @@
+
+           ___      .______        ______  __    __  .______      
+          /   \     |   _  \      /      ||  |  |  | |   _  \     
+         /  ^  \    |  |_)  |    |  ,----'|  |__|  | |  |_)  |    
+        /  /_\  \   |      /     |  |     |   __   | |      /     
+       /  _____  \  |  |\  \\___ |  `----.|  |  |  | |  |\  \\___.
+      /__/     \__\ | _| `._____| \______||__|  |__| | _| `._____|
+    
+Logging With ArchR!
+
+Start Time : 2022-04-12 10:46:42
+
+------- ArchR Info
+
+ArchRThreads = 1
+ArchRGenome = Hg19
+
+------- System Info
+
+Computer OS = unix
+Total Cores = 16
+
+------- Session Info
+
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: Ubuntu 20.04.4 LTS
+
+Matrix products: default
+BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.9.0
+LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.9.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C               LC_TIME=en_US.UTF-8       
+ [4] LC_COLLATE=en_US.UTF-8     LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                  LC_ADDRESS=C              
+[10] LC_TELEPHONE=C             LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+ [1] grid      parallel  stats4    stats     graphics  grDevices utils     datasets 
+ [9] methods   base     
+
+other attached packages:
+ [1] nabor_0.5.0                       SeuratObject_4.0.4               
+ [3] Seurat_4.1.0                      gridExtra_2.3                    
+ [5] Rsamtools_2.8.0                   BSgenome.Hsapiens.UCSC.hg38_1.4.3
+ [7] BSgenome_1.60.0                   rtracklayer_1.52.1               
+ [9] Biostrings_2.60.2                 XVector_0.32.0                   
+[11] ArchR_1.0.1                       rhdf5_2.36.0                     
+[13] Matrix_1.4-1                      data.table_1.14.2                
+[15] ggside_0.2.0                      scater_1.20.1                    
+[17] scran_1.20.1                      scuttle_1.2.1                    
+[19] SingleCellExperiment_1.14.1       SummarizedExperiment_1.22.0      
+[21] Biobase_2.52.0                    GenomicRanges_1.44.0             
+[23] GenomeInfoDb_1.28.4               IRanges_2.26.0                   
+[25] S4Vectors_0.30.2                  BiocGenerics_0.38.0              
+[27] scDblFinder_1.6.0                 sparseMatrixStats_1.4.2          
+[29] MatrixGenerics_1.4.3              matrixStats_0.61.0               
+[31] magrittr_2.0.3                    forcats_0.5.1                    
+[33] stringr_1.4.0                     dplyr_1.0.8                      
+[35] purrr_0.3.4                       readr_2.1.2                      
+[37] tidyr_1.2.0                       tibble_3.1.6                     
+[39] ggplot2_3.3.5                     tidyverse_1.3.1                  
+[41] reticulate_1.24                  
+
+loaded via a namespace (and not attached):
+  [1] utf8_1.2.2                        tidyselect_1.1.2                 
+  [3] htmlwidgets_1.5.4                 BiocParallel_1.26.2              
+  [5] Rtsne_0.15                        munsell_0.5.0                    
+  [7] ScaledMatrix_1.0.0                codetools_0.2-18                 
+  [9] ica_1.0-2                         statmod_1.4.36                   
+ [11] xgboost_1.5.2.1                   future_1.24.0                    
+ [13] miniUI_0.1.1.1                    withr_2.5.0                      
+ [15] spatstat.random_2.2-0             colorspace_2.0-3                 
+ [17] knitr_1.38                        rstudioapi_0.13                  
+ [19] ROCR_1.0-11                       tensor_1.5                       
+ [21] listenv_0.8.0                     labeling_0.4.2                   
+ [23] GenomeInfoDbData_1.2.6            polyclip_1.10-0                  
+ [25] farver_2.1.0                      bit64_4.0.5                      
+ [27] parallelly_1.31.0                 vctrs_0.4.0                      
+ [29] generics_0.1.2                    xfun_0.30                        
+ [31] R6_2.5.1                          ggbeeswarm_0.6.0                 
+ [33] rsvd_1.0.5                        isoband_0.2.5                    
+ [35] locfit_1.5-9.5                    hdf5r_1.3.5                      
+ [37] bitops_1.0-7                      rhdf5filters_1.4.0               
+ [39] spatstat.utils_2.3-0              DelayedArray_0.18.0              
+ [41] assertthat_0.2.1                  BiocIO_1.2.0                     
+ [43] promises_1.2.0.1                  scales_1.1.1                     
+ [45] vroom_1.5.7                       beeswarm_0.4.0                   
+ [47] gtable_0.3.0                      beachmat_2.8.1                   
+ [49] Cairo_1.5-15                      globals_0.14.0                   
+ [51] goftest_1.2-3                     rlang_1.0.2                      
+ [53] splines_4.1.3                     lazyeval_0.2.2                   
+ [55] spatstat.geom_2.4-0               broom_0.7.12                     
+ [57] yaml_2.3.5                        reshape2_1.4.4                   
+ [59] abind_1.4-5                       modelr_0.1.8                     
+ [61] backports_1.4.1                   httpuv_1.6.5                     
+ [63] tools_4.1.3                       ellipsis_0.3.2                   
+ [65] spatstat.core_2.4-2               RColorBrewer_1.1-3               
+ [67] ggridges_0.5.3                    Rcpp_1.0.8.3                     
+ [69] plyr_1.8.7                        zlibbioc_1.38.0                  
+ [71] RCurl_1.98-1.6                    rpart_4.1.16                     
+ [73] deldir_1.0-6                      pbapply_1.5-0                    
+ [75] viridis_0.6.2                     cowplot_1.1.1                    
+ [77] zoo_1.8-9                         haven_2.4.3                      
+ [79] ggrepel_0.9.1                     cluster_2.1.3                    
+ [81] fs_1.5.2                          RSpectra_0.16-0                  
+ [83] scattermore_0.8                   lmtest_0.9-40                    
+ [85] reprex_2.0.1                      RANN_2.6.1                       
+ [87] fitdistrplus_1.1-8                hms_1.1.1                        
+ [89] patchwork_1.1.1                   mime_0.12                        
+ [91] evaluate_0.15                     xtable_1.8-4                     
+ [93] XML_3.99-0.9                      readxl_1.4.0                     
+ [95] compiler_4.1.3                    KernSmooth_2.23-20               
+ [97] crayon_1.5.1                      BSgenome.Hsapiens.UCSC.hg19_1.4.3
+ [99] htmltools_0.5.2                   mgcv_1.8-40                      
+[101] later_1.3.0                       tzdb_0.3.0                       
+[103] lubridate_1.8.0                   DBI_1.1.2                        
+[105] dbplyr_2.1.1                      MASS_7.3-56                      
+[107] cli_3.2.0                         metapod_1.0.0                    
+[109] igraph_1.3.0                      pkgconfig_2.0.3                  
+[111] GenomicAlignments_1.28.0          plotly_4.10.0                    
+[113] spatstat.sparse_2.1-0             xml2_1.3.3                       
+[115] vipor_0.4.5                       dqrng_0.3.0                      
+[117] rvest_1.0.2                       digest_0.6.29                    
+[119] sctransform_0.3.3                 RcppAnnoy_0.0.19                 
+[121] spatstat.data_2.1-4               rmarkdown_2.13                   
+[123] cellranger_1.1.0                  leiden_0.3.9                     
+[125] uwot_0.1.11                       edgeR_3.34.1                     
+[127] DelayedMatrixStats_1.14.3         restfulr_0.0.13                  
+[129] gtools_3.9.2                      shiny_1.7.1                      
+[131] rjson_0.2.21                      nlme_3.1-157                     
+[133] lifecycle_1.0.1                   jsonlite_1.8.0                   
+[135] Rhdf5lib_1.14.2                   BiocNeighbors_1.10.0             
+[137] viridisLite_0.4.0                 limma_3.48.3                     
+[139] fansi_1.0.3                       pillar_1.7.0                     
+[141] lattice_0.20-45                   fastmap_1.1.0                    
+[143] httr_1.4.2                        survival_3.2-13                  
+[145] glue_1.6.2                        png_0.1-7                        
+[147] bluster_1.2.1                     bit_4.0.4                        
+[149] stringi_1.7.6                     BiocSingular_1.8.1               
+[151] irlba_2.3.5                       future.apply_1.8.1               
+
+
+------- Log Info
+
+
+2022-04-12 10:46:42 : createArrowFiles Input-Parameters, Class = list
+
+createArrowFiles Input-Parameters$inputFiles: length = 1
+                                                                                  pbmc_1 
+"/mnt/sda/data/10X_pbmc_multiome_10k//pbmc_granulocyte_sorted_10k_atac_fragments.tsv.gz" 
+
+
+createArrowFiles Input-Parameters$sampleNames: length = 1
+[1] "pbmc_1"
+
+
+createArrowFiles Input-Parameters$outputNames: length = 1
+[1] "pbmc_1"
+
+
+createArrowFiles Input-Parameters$validBarcodes: length = 0
+NULL
+
+
+createArrowFiles Input-Parameters$minTSS: length = 1
+[1] 3
+
+
+createArrowFiles Input-Parameters$minFrags: length = 1
+[1] 500
+
+
+createArrowFiles Input-Parameters$maxFrags: length = 1
+[1] 1e+05
+
+
+createArrowFiles Input-Parameters$QCDir: length = 1
+[1] "/home/philipp/Bioinfo_Playground/10x_pbmc_multiome_processing_output/Consensus_ArchR_QC"
+
+
+createArrowFiles Input-Parameters$nucLength: length = 1
+[1] 147
+
+
+createArrowFiles Input-Parameters$promoterRegion: length = 2
+[1] 2000  100
+
+
+createArrowFiles Input-Parameters$excludeChr: length = 2
+[1] "chrM" "chrY"
+
+
+createArrowFiles Input-Parameters$nChunk: length = 1
+[1] 5
+
+
+createArrowFiles Input-Parameters$bcTag: length = 1
+[1] "qname"
+
+
+createArrowFiles Input-Parameters$gsubExpression: length = 0
+NULL
+
+
+createArrowFiles Input-Parameters$bamFlag: length = 0
+NULL
+
+
+createArrowFiles Input-Parameters$offsetPlus: length = 1
+[1] 4
+
+
+createArrowFiles Input-Parameters$offsetMinus: length = 1
+[1] -5
+
+
+createArrowFiles Input-Parameters$addTileMat: length = 1
+[1] FALSE
+
+
+createArrowFiles Input-Parameters$addGeneScoreMat: length = 1
+[1] FALSE
+
+
+createArrowFiles Input-Parameters$force: length = 1
+[1] TRUE
+
+
+createArrowFiles Input-Parameters$threads: length = 1
+[1] 1
+
+
+createArrowFiles Input-Parameters$parallelParam: length = 0
+NULL
+
+
+createArrowFiles Input-Parameters$subThreading: length = 1
+[1] FALSE
+
+
+createArrowFiles Input-Parameters$verbose: length = 1
+[1] TRUE
+
+
+createArrowFiles Input-Parameters$cleanTmp: length = 1
+[1] TRUE
+
+
+createArrowFiles Input-Parameters$logFile: length = 1
+[1] "ArchRLogs/ArchR-createArrows-dff5eb7d13d-Date-2022-04-12_Time-10-46-42.log"
+
+
+createArrowFiles Input-Parameters$filterFrags: length = 1
+[1] 500
+
+
+createArrowFiles Input-Parameters$filterTSS: length = 1
+[1] 3
+
+
+
+2022-04-12 10:46:42 : Cleaning Temporary Files
+2022-04-12 10:46:42 : Batch Execution w/ safelapply!, 0 mins elapsed.
+
+###########
+2022-04-12 10:46:42 : Creating Arrow File pbmc_1.arrow (pbmc_1 : 1 of 1)
+###########
+
+
+2022-04-12 10:46:42 : validBC, Class = NULL
+
+validBC: length = 0
+NULL
+
+
+
+2022-04-12 10:46:42 : (pbmc_1 : 1 of 1) Checking if completed file exists!
+2022-04-12 10:46:42 : (pbmc_1 : 1 of 1) Arrow Exists! Overriding since force = TRUE!, 0 mins elapsed.
+
+2022-04-12 10:46:43 : (pbmc_1 : 1 of 1) Determining Arrow Method to use!
+2022-04-12 10:46:43 : (pbmc_1 : 1 of 1) Reading In Fragments from inputFiles (readMethod = tabix), 0.006 mins elapsed.
+2022-04-12 10:46:43 : (pbmc_1 : 1 of 1) Tabix Bed To Temporary File, 0.006 mins elapsed.
+
+2022-04-12 10:46:43 : tileChromSizes, Class = GRanges
+GRanges object with 120 ranges and 1 metadata column:
+        seqnames              ranges strand |     chunkName
+           <Rle>           <IRanges>  <Rle> |   <character>
+    [1]     chr1          1-49791284      * |   chr1#chunk1
+    [2]     chr1   49791285-99582568      * |   chr1#chunk2
+    [3]     chr1  99582569-149373853      * |   chr1#chunk3
+    [4]     chr1 149373854-199165137      * |   chr1#chunk4
+    [5]     chr1 199165138-248956422      * |   chr1#chunk5
+    ...      ...                 ...    ... .           ...
+  [116]     chrY          1-11445483      * | chrY#chunk116
+  [117]     chrY   11445484-22890966      * | chrY#chunk117
+  [118]     chrY   22890967-34336449      * | chrY#chunk118
+  [119]     chrY   34336450-45781932      * | chrY#chunk119
+  [120]     chrY   45781933-57227415      * | chrY#chunk120
+  -------
+  seqinfo: 24 sequences from an unspecified genome; no seqlengths
+
+
+2022-04-12 10:46:54 : (pbmc_1 : 1 of 1) .tabixToTmp Fragments-Chunk-(1 of 120)-chr1:1-49791284, Class = data.table
+ 
+2022-04-12 10:46:54 : (pbmc_1 : 1 of 1) .tabixToTmp Fragments-Chunk-(1 of 120)-chr1:1-49791284, Class = data.frame
+(pbmc_1 : 1 of 1) .tabixToTmp Fragments-Chunk-(1 of 120)-chr1:1-49791284: nRows = 6447704, nCols = 3
+
+************************************************************
+2022-04-12 10:46:54 : ERROR Found in .tabixToTmp for (pbmc_1 : 1 of 1) 
+LogFile = ArchRLogs/ArchR-createArrows-dff5eb7d13d-Date-2022-04-12_Time-10-46-42.log
+
+<simpleError in file(file, "wb"): cannot open the connection>
+
+2022-04-12 10:46:54 : errorList, Class = list
+
+errorList$x: length = 1
+[1] 1
+
+
+errorList$tileChromSizes: length = 1
+GRanges object with 1 range and 1 metadata column:
+      seqnames     ranges strand |   chunkName
+         <Rle>  <IRanges>  <Rle> | <character>
+  [1]     chr1 1-49791284      * | chr1#chunk1
+  -------
+  seqinfo: 24 sequences from an unspecified genome; no seqlengths
+
+
+errorList$fragments: length = 1
+[1] "Error with Fragments!"
+
+
+
+************************************************************
+
+
+************************************************************
+2022-04-12 10:46:54 : ERROR Found in .tabixToTmp for (pbmc_1 : 1 of 1) 
+LogFile = ArchRLogs/ArchR-createArrows-dff5eb7d13d-Date-2022-04-12_Time-10-46-42.log
+
+<simpleError in .logError(e, fn = ".tabixToTmp", info = prefix, errorList = errorList,     logFile = logFile): Exiting See Error Above>
+
+2022-04-12 10:46:54 : errorList, Class = list
+
+errorList$tabixFile: length = 1
+                                                                                  pbmc_1 
+"/mnt/sda/data/10X_pbmc_multiome_10k//pbmc_granulocyte_sorted_10k_atac_fragments.tsv.gz" 
+
+
+errorList$sampleName: length = 1
+[1] "pbmc_1"
+
+
+errorList$validBC: length = 0
+NULL
+
+
+errorList$chromSizes: length = 24
+GRanges object with 6 ranges and 0 metadata columns:
+      seqnames      ranges strand
+         <Rle>   <IRanges>  <Rle>
+  [1]     chr1 1-248956422      *
+  [2]     chr2 1-242193529      *
+  [3]     chr3 1-198295559      *
+  [4]     chr4 1-190214555      *
+  [5]     chr5 1-181538259      *
+  [6]     chr6 1-170805979      *
+  -------
+  seqinfo: 24 sequences from an unspecified genome
+
+
+errorList$nChunk: length = 1
+[1] 5
+
+
+errorList$threads: length = 1
+[1] 1
+
+
+errorList$gsubExpression: length = 0
+NULL
+
+
+errorList$prefix: length = 1
+[1] "(pbmc_1 : 1 of 1)"
+
+
+errorList$verbose: length = 1
+[1] TRUE
+
+
+errorList$tstart: length = 1
+[1] "2022-04-12 10:46:42 CEST"
+
+
+
+************************************************************
+
+
+2022-04-12 10:46:54 : createArrowFiles has encountered an error, checking if any ArrowFiles completed..
+
+------- Completed
+
+End Time : 2022-04-12 10:46:54
+Elapsed Time Minutes = 0.211530168851217
+Elapsed Time Hours = 0.0035255362590154
+
+-------
+
+
+
