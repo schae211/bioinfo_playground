@@ -29,7 +29,7 @@ The goals are:
 knitr::opts_chunk$set(echo = TRUE)
 library(reticulate)
 Sys.setenv(RETICULATE_PYTHON =
-             "/home/pschaefer/miniconda3/envs/r-reticulate/bin/python")
+             "/home/philipp/miniconda3/envs/r-reticulate/bin/python")
 timestamp <- format(Sys.time(), "%Y-%m-%d-%H-%M")
 s <- 4242
 ```
@@ -48,6 +48,7 @@ suppressPackageStartupMessages({
   library(ggside)
   library(ArchR)
   library(parallel)
+  library(clustree)
 })
 ```
 
@@ -869,7 +870,7 @@ Check the putative doublets in our plots. And everything looks as expected.
 
 ```{r fig.width=6, fig.height=4}
 coldata %>%
-  filter(non_empty) %>%
+  filter(Keep == 1, qc_pass) %>%
   drop_na() %>%
   ggplot(aes(x=score, y=dbl_score_atac)) +
   geom_point(aes(color=is_doublet), size=0.4, alpha=0.4) +
@@ -900,7 +901,8 @@ Subsetting the count matrix.
 
 ```{r}
 dim(consensus_rna)
-consensus_rna_dbl <- consensus_rna[, !(colnames(consensus_rna) %in% doublet_barcodes)]
+consensus_coldata <- coldata %>% filter(!is_doublet, non_empty, qc_pass, Keep==1)
+consensus_rna_dbl <- consensus_rna[, colnames(consensus_rna) %in% consensus_coldata$barcode]
 dim(consensus_rna_dbl)
 ```
 
@@ -910,30 +912,321 @@ consensus_proj_dbl <- consensus_proj[!(consensus_proj$barcodes %in% doublet_barc
 dim(ArchR::getCellColData(consensus_proj_dbl))
 ```
 
+# Dimensionality Reduction
+
+## RNA
+
+Here we use the vst method to identify highly variable genes and then PCA on the log-normalized counts.
+
+```{r}
+log_norm <- function(mtx, sf=1e4) {
+   log1p(
+      t( t(mtx) / sparseMatrixStats::colSums2(mtx) ) * sf
+   )
+}
+
+hvg_vst_method <- function(mtx, plotting=F) {
+   df <- tibble(gene = rownames(mtx), 
+                mean = Matrix::rowMeans(mtx),
+                var = sparseMatrixStats::rowVars(mtx)) %>%
+      mutate(log10.mean = log10(mean), 
+             log10.var = log10(var)) %>%
+     filter(is.finite(log10.var))
+   l.fit <- stats::loess(formula = log10.var ~ log10.mean, data = df, span = 0.3)
+   df <- df %>%
+     mutate(pred.log10.var = predict(l.fit, log10.mean)) %>%
+     mutate(pred.var = 10^pred.log10.var)
+   if (plotting) {
+      p <- 
+         ggplot() +
+        geom_point(aes(x=df$log10.mean, y=df$log10.var),
+                   size = 0.2)  +
+        geom_line(aes(x=df$log10.mean, y=l.fit$fitted), color = "blue") +
+        labs(x = "log10 Mean", y = "log10 Variance", 
+             title = "Loess Fit") +
+        scale_color_manual(values = c("TRUE" = "forestgreen", "FALSE" = "red")) +
+        coord_equal()
+      print(p)
+   }
+   gene_mean_subtracted <- mtx - df$mean
+   exp_var_divided <- gene_mean_subtracted / (df$pred.var)^0.5
+   clip <- ncol(mtx)^0.5
+   exp_var_divided[exp_var_divided > clip] <- clip
+   exp_var_divided <- Matrix::Matrix(exp_var_divided, sparse=TRUE)
+   
+   df <- df %>%
+     mutate(std.var = sparseMatrixStats::rowVars(exp_var_divided))
+   if (plotting) {
+      p <- 
+         df %>%
+           ggplot() +
+           geom_point(aes(x=log10.mean, y=std.var),
+                      size = 0.2, alpha = 0.5) +
+           labs(x = "log10 Mean Expression", y = "Standardized Variance", 
+                title = "Standardized Variance") +
+           scale_color_manual(values = c("TRUE" = "forestgreen", "FALSE" = "red")) +
+           guides(colour = guide_legend(override.aes = list(size = 2)))
+      print(p)
+   }
+   df
+}
+```
+
+First we need to remove genes with zero variance.
+
+```{r}
+consensus_rna_dbl <- consensus_rna_dbl[sparseMatrixStats::rowVars(consensus_rna_dbl) > 0, ]
+```
+
+Then compute highly variable genes.
+
+```{r}
+hvg_rna <- hvg_vst_method(consensus_rna_dbl, plotting = TRUE) %>%
+  slice_max(std.var, n=2000) %>%
+  pull(gene)
+```
+
+And finally PCA.
+
+```{r}
+pca_rna <- consensus_rna_dbl %>%
+  log_norm() %>%
+  .[hvg_rna, ] %>%
+  t() %>%
+  irlba::prcomp_irlba(n = 50, retx = TRUE, center = TRUE, scale. = TRUE) %>%
+  .$x %>%
+  set_rownames(colnames(consensus_rna_dbl))
+```
+
+Also have a look at the UMAP.
+
+```{r}
+umap_rna <- uwot::umap(X=pca_rna, n_neighbors=30, metric="cosine")
+```
+
+```{r fig.height=6, fig.width=8}
+ggplot() +
+  geom_point(aes(x=umap_rna[,1],
+                 y=umap_rna[,2],
+                 color=consensus_coldata$sample),
+             size=0.1, alpha=0.5) +
+  labs(x = "UMAP 1", y = "UMAP 2", color = "Sample") +
+  guides(colour = guide_legend(override.aes = list(size = 2)))
+```
+
+## ATAC
+
+Here we will use iterative LSI as it is implemented in ArchR.
+
+```{r}
+quiet_lsi <- purrr::quietly(ArchR::addIterativeLSI)
+
+quiet_run <- quiet_lsi(
+    ArchRProj = consensus_proj_dbl, 
+    useMatrix = "TileMatrix", 
+    iterations = 5,
+    clusterParams = list(
+      resolution = c(0.1, 0.2, 0.4, 0.8), 
+      sampleCells = 10000,
+      n.start = 10
+    ),
+    saveIterations = FALSE,
+    depthCol = "nFrags",
+    varFeatures = 100000,
+    firstSelection = "top", 
+    binarize = TRUE,
+    name = "LSI_ATAC",
+    corCutOff = 0.75,
+    force = TRUE,
+    seed = s
+  )
+
+consensus_proj_dbl <- quiet_run$result
+```
+
+<details>
+<summary>Check the messages from messages</summary>
+```{r}
+# displaying messages
+options(max.print=1e5)
+print(quiet_run$messages)
+rm(quiet_run)
+```
+
+Let's have a look at a UMAP based on the LSI embedding.
+
+```{r message=FALSE}
+consensus_proj_dbl <- addUMAP(
+    ArchRProj = consensus_proj_dbl, 
+    reducedDims = "LSI_ATAC", 
+    name = "UMAP_LSI_ATAC", 
+    nNeighbors = 30, 
+    minDist = 0.5, 
+    metric = "cosine", 
+    force = TRUE, 
+    verbose = FALSE
+)
+```
+
+```{r fig.height=6, fig.width=8}
+ggplot() +
+  geom_point(aes(x=consensus_proj_dbl@embeddings$UMAP_LSI_ATAC$df[,1],
+                 y=consensus_proj_dbl@embeddings$UMAP_LSI_ATAC$df[,2],
+                 color=consensus_proj_dbl$Sample),
+             size=0.1, alpha=0.5) +
+  labs(x = "UMAP 1", y = "UMAP 2", color = "Sample") +
+  guides(colour = guide_legend(override.aes = list(size = 2)))
+```
+
+# Annotation
+
+We will do some graph based clustering and then check for canonical markers in each cluster.
+
+We will check several different resolutions to get the desired number of clusters (since we want to start with a coarse-grained cell type assignment). 
+
+First we need to create the shared-nearest-neighbor graphs (using `bluster`).
+
+```{r}
+set.seed(s)
+snn_log <- bluster::makeSNNGraph(pca_rna[,1:30], k = 20)
+```
+
+Now we can cluster using the Leiden algorithm.
+
+First the log-transformed data.
+
+```{r fig.width=8, fig.height=7}
+testing_resolutions <- c(0.01, 0.02, 0.04, 0.08, 0.12) %>%
+  set_names(paste0("res_", .))
+#print(paste0("Testing the following resolution: ", testing_resolutions))
+clusters <- purrr::map_dfc(testing_resolutions, function(res) {
+  # igraph::cluster_louvain
+  set.seed(s)
+  igraph::cluster_leiden(snn_log, 
+                         resolution_parameter = res,
+                         )$membership
+})
+suppressWarnings(
+  clustree(as.data.frame(clusters), prefix = "res_")
+)
+```
+
+We will chose a resolution of `0.08` for the initial clusters.
+
+```{r}
+set.seed(s)
+clusters_rna <- igraph::cluster_leiden(snn_log, resolution_parameter = 0.08,
+                         )$membership
+table(clusters_rna)
+```
+
+Also add it to the coldata.
+
+```{r}
+cluster_tibble <- tibble::tibble(barcode = rownames(pca_rna),
+                                 cluster = clusters_rna)
+
+consensus_coldata <- consensus_coldata %>%
+  left_join(cluster_tibble, by="barcode")
+```
+
+Check marker genes.
+
+```{r}
+plot_violin <- function(gene, expression, clusters, scale="width") {
+  idents <- sort(unique(clusters))
+  df <- as.data.frame(cbind(clusters, expression[gene,]))
+  colnames(df) <- c("cluster", "expr")
+  df <- df %>% mutate(cluster = factor(cluster, idents))
+  ggplot(df) +
+    geom_violin(aes(x=cluster, y=expr, fill=cluster), scale = {{scale}}) +
+    labs(x = "Cluster", y = "Transformed Expression", title = {{gene}}) +
+    theme(legend.position = "none", 
+          plot.title = element_text(hjust = 0.5))
+}
+```
+
+```{r}
+consensus_rna_log <- consensus_rna_dbl %>% log_norm()
+```
+
+
+```{r}
+plot_violin("CD8A", consensus_rna_log, clusters_rna)
+plot_violin("CD8B", consensus_rna_log, clusters_rna)
+plot_violin("IL7R", consensus_rna_log, clusters_rna)
+plot_violin("CCR7", consensus_rna_log, clusters_rna)
+plot_violin("S100A4", consensus_rna_log, clusters_rna)
+plot_violin("CD14", consensus_rna_log, clusters_rna)
+plot_violin("LYZ", consensus_rna_log, clusters_rna)
+plot_violin("MS4A1", consensus_rna_log, clusters_rna)
+plot_violin("FCGR3A", consensus_rna_log, clusters_rna)
+plot_violin("MS4A7", consensus_rna_log, clusters_rna)
+plot_violin("GNLY", consensus_rna_log, clusters_rna)
+plot_violin("NKG7", consensus_rna_log, clusters_rna)
+plot_violin("FCER1A", consensus_rna_log, clusters_rna)
+plot_violin("CST3", consensus_rna_log, clusters_rna)
+plot_violin("PPBP", consensus_rna_log, clusters_rna)
+```
+
+```{r}
+translate_vector <- c(
+  "CD8+_T" = 1,
+  "Naive_CD4+_T" = 2,
+  "Memory_CD4+_T"= 8,
+  "CD14+_Mono" = 5,
+  "B" = 7,
+  "FCGR3A+_Mono" = 3,
+  "NK" = 4,
+  "DC" = 6,
+  "NA" = 9
+)
+translate_vector <- names(translate_vector) %>%
+  set_names(translate_vector)
+length(translate_vector)
+
+annotations_rna <- translate_vector[as.character(clusters_rna)]
+names(annotations_rna) <- colnames(consensus_rna_dbl)
+
+table(annotations_rna)
+```
+
+Adding to the coldata.
+
+```{r}
+annotation_tibble <- tibble::tibble(barcode = rownames(pca_rna),
+                                    annotation = annotations_rna)
+
+consensus_coldata <- consensus_coldata %>%
+  left_join(annotation_tibble, by="barcode")
+```
+
+Plot UMAP.
+
+```{r fig.height=6, fig.width=8}
+ggplot() +
+  geom_point(aes(x=umap_rna[,1],
+                 y=umap_rna[,2],
+                 color=consensus_coldata$annotation),
+             size=0.1, alpha=0.5) +
+  labs(x = "UMAP 1", y = "UMAP 2", color = "Sample") +
+  guides(colour = guide_legend(override.aes = list(size = 2)))
+```
+
 # Saving
 
 ```{r message=FALSE}
-saveRDS(rna_raw, 
-        paste0(output_dir, timestamp, "_tel_rna_raw.RDS"))
-saveRDS(consensus_rna, 
-        paste0(output_dir, timestamp, "_rna_consensus.RDS"))
 saveRDS(consensus_rna_dbl, 
         paste0(output_dir, timestamp, "_rna_consensus_dbl.RDS"))
 
-saveArchRProject(ArchRProj = proj, 
-                 outputDirectory = paste0(output_dir, "ConsensusQC_ArchR_PROJ"), 
-                 load = FALSE)
-saveArchRProject(ArchRProj = consensus_proj, 
-                 outputDirectory = paste0(output_dir, "Consensus_ArchR_PROJ"), 
-                 load = FALSE)
 saveArchRProject(ArchRProj = consensus_proj_dbl, 
                  outputDirectory = paste0(output_dir, "Consensus_dbl_ArchR_PROJ"), 
                  load = FALSE)
 
-saveRDS(coldata, 
+saveRDS(consensus_coldata, 
         paste0(output_dir, timestamp, "_coldata_after_QC.RDS"))
 
-save.image(file = "Latest_Consensus_QC.RData")
+save.image(file = paste0(output_dir, "Latest_Consensus_QC.RData"))
 ```
 
 # References

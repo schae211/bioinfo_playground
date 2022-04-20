@@ -17,9 +17,11 @@ suppressPackageStartupMessages({
    library(gridExtra)
    library(CCA)
    library(GGally)
+   library(ArchR)
+   library(parallel)
 })
 Sys.setenv(RETICULATE_PYTHON =
-             "/home/pschaefer/miniconda3/envs/r-reticulate/bin/python")
+             "/home/philipp/miniconda3/envs/r-reticulate/bin/python")
 ```
 
 # Status
@@ -1108,7 +1110,273 @@ ggplot() +
 
 # Integration of scRNA and scATAC data
 
-TODO
+Loading in the data.
+
+```{r}
+count_matrix <- readRDS("10x_pbmc_multiome_processing_output/2022-04-20-14-59_rna_consensus_dbl.RDS")
+coldata <- readRDS("10x_pbmc_multiome_processing_output/2022-04-20-14-59_coldata_after_QC.RDS")
+atac_proj <- ArchR::loadArchRProject("10x_pbmc_multiome_processing_output/Consensus_dbl_ArchR_PROJ")
+lsi_embed <- atac_proj@reducedDims$LSI_ATAC$matSVD
+ArchR::getAvailableMatrices(atac_proj)
+gene_score_experiment <- ArchR::getMatrixFromProject(ArchRProj = atac_proj,
+                                                     useMatrix = "GeneScoreMatrix")
+gene_score_matrix <- gene_score_experiment@assays@data$GeneScoreMatrix
+rownames(gene_score_matrix) <- gene_score_experiment@elementMetadata$name
+rm(gene_score_experiment)
+```
+
+Get the gene intersection and subset both matrices accordingly.
+
+```{r}
+gene_intersect <-
+   dplyr::intersect(rownames(count_matrix), rownames(gene_score_matrix))
+print(paste0(length(gene_intersect), " genes are present in both matrices."))
+count_matrix <- count_matrix[gene_intersect, ]
+gene_score_matrix <- gene_score_matrix[gene_intersect, ]
+colnames(gene_score_matrix) <- str_remove(colnames(gene_score_matrix), "[^#]+#")
+rownames(lsi_embed) <- str_remove(rownames(lsi_embed), "[^#]+#")
+stopifnot(nrow(count_matrix) == nrow(gene_score_matrix))
+```
+
+How many cells do we have in both datasets? Since, we took the data from a multiome dataset after join QC, we have the same cells!
+
+```{r}
+ncol(count_matrix)
+ncol(gene_score_matrix)
+```
+
+Therefore, we need to give the cells unique names which we will to by adding "RNA" or "ATAC" to the barcode.
+
+```{r}
+colnames(count_matrix) <- paste0("RNA#", colnames(count_matrix))
+colnames(gene_score_matrix) <- paste0("ATAC#", colnames(gene_score_matrix))
+rownames(lsi_embed) <- paste0("ATAC#", rownames(lsi_embed))
+stopifnot(all(colnames(gene_score_matrix) == rownames(lsi_embed)))
+```
+
+Before running the CCA, we need to determine which genes we ought to use. Therefore we will use the again the hvg_vst method to determine the 1500 most variable genes in both dataset and then use the union. Importantly, we are using the gene scores for the ATAC data here!
+
+```{r}
+# remove genes with zero variance first
+to_remove <- rownames(count_matrix)[sparseMatrixStats::rowVars(count_matrix) == 0 |
+                                       sparseMatrixStats::rowVars(gene_score_matrix) == 0]
+to_remove
+```
+
+
+```{r}
+count_matrix <- count_matrix[!rownames(count_matrix) %in% to_remove, ]
+gene_score_matrix <- gene_score_matrix[!rownames(gene_score_matrix) %in% to_remove, ]
+
+hvg <- purrr::map(c(count_matrix, gene_score_matrix), function(mtx) {
+   df <- hvg_vst_method(mtx) %>%
+      dplyr::slice_max(std.var, n=1500) %>%
+      pull(gene)
+}) %>%
+   unlist() %>%
+   unique()
+length(hvg)
+```
+
+```{r}
+cca.out <- compute_cca(count_matrix[hvg,], gene_score_matrix[hvg,])
+```
+
+```{r}
+cca.out$cor %>% length
+cca.out$xcoef %>% dim
+cca.out$ycoef %>% dim
+```
+
+Lastly we need to apply the L2 penalty to each row (i.e. the embedding of a cell).
+
+```{r}
+embed_x <- cca.out$xcoef / sqrt(Matrix::rowSums(cca.out$xcoef^2))
+embed_y <- cca.out$ycoef / sqrt(Matrix::rowSums(cca.out$ycoef^2))
+rownames(embed_x) <- colnames(count_matrix[hvg,])
+rownames(embed_y) <- colnames(gene_score_matrix[hvg,])
+```
+
+Let's compute a umap and look at the data. They seems to be aligned, but the RNA modality is preferebly located on the edge of the clusters.
+
+```{r}
+umap <- uwot::umap(rbind(embed_x, embed_y))
+ggplot() +
+   geom_point(aes(x=umap[,1], y=umap[,2],
+                  color = str_extract(rownames(rbind(embed_x, embed_y)),
+                                      "RNA|ATAC")),
+              size=0.2, alpha=0.2) +
+   labs(color="Modality") +
+   guides(color = guide_legend(override.aes = list(size = 2,
+                                                   alpha=1)))
+```
+
+## Transfer Anchors
+
+In our common CCA embedding we search for mutual nearest neighbors, e.g. assuming `k.anchor=10`, cell A and cell B are MNNs if cell A is among the 10 nearest neighbors of cell B, and cell B is among the 10 nearest neighbors of cell A. We call these pairs of cell `TransferAnchors`.
+
+To do that we will first construct a nearest neighbor graph. Therefore, we will run `RANN::nn2` two times: First we get for each cell in $X$, the 5 closest cells in $Y$ and then the other way around)
+
+```{r}
+nn1 <- RANN::nn2(embed_y, embed_x, k=10)
+nn2 <- RANN::nn2(embed_x, embed_y, k=10)
+nrow(embed_x) == nrow(nn1$nn.idx)
+nrow(embed_y) == nrow(nn2$nn.idx)
+```
+
+Construct the graph. Since we omit the filtering step, we will set `k=2`, meaning two cells are considered anchors if they are mutual nearest neighbor when we only consider the two nearest neighbors.
+
+```{r}
+k <- 2
+gr <- igraph::graph(c(), n =nrow(nn1$nn.idx) + nrow(nn2$nn.idx))
+for(i in 1:k) {
+   gr <- igraph::add_edges(
+      gr, as.vector(rbind(1:nrow(nn1$nn.idx), nn1$nn.idx[,i] + nrow(nn1$nn.idx)))
+      )
+}
+
+for(i in 1:k) {
+   gr <- igraph::add_edges(
+      gr, as.vector(rbind((1:nrow(nn2$nn.idx)) + nrow(nn1$nn.idx),
+                         nn2$nn.idx[,i])))
+}
+gr <- igraph::as.undirected(gr, "mutual" )
+anchors <- igraph::as_edgelist(gr)
+#anchors[,2] <- anchors[,2] - nrow(nn1$nn.idx)
+dim(anchors)
+head(anchors)
+```
+
+After finding these integration anchors in the low-dimensional space, they are filtered based on the high-dimensional original space. In particular the 200 (`max.features = 200`) most informative features for the CCA (i.e. features with the highest loading) are used for filtering. So for each query cell of an anchor cell pair the corresponding reference cell must be among the 200 (`k.filter = 200`) nearest neighbors in this "high-dimensional space".
+
+We will omit this filtering step for now.
+
+After filtering the integration anchors are scored based on the overlap on their neighborhood. In particular for both the reference and the query cell the 30 (`k.score = 30`) nearest neighbors are determined in the same dataset (within-dataset neighbors) and the other-dataset using the low-dimensional embedding. Thus, we have 4 matrices, namely a) the NN of the reference cell from the reference dataset, b) the NN of the reference cell from the query dataset, c) the NN of the query cell from the reference datset, d) the NN of the query cell from the query dataset. Now we determine the overlap between a) and c), as well as b) and d). We combine the overlap measures and call it the score ("how big is the overlap of the neighborhoods"). Furthermore, the effect of outliers is reduced by using the 0.01 and 0.9 quantiles to rescale the anchor scores to a range of 0 to 1.
+
+```{r}
+k.score <- 30
+nnA <- RANN::nn2(embed_x, k=k.score)
+nnB <- RANN::nn2(embed_y, embed_x, k=k.score)
+nnC <- RANN::nn2(embed_y, k=k.score)
+nnD <- RANN::nn2(embed_x, embed_y, k=k.score)
+
+# adjusting the indices
+nnB$nn.idx <- nnB$nn.idx + nrow(nnA$nn.idx)
+nnC$nn.idx <- nnC$nn.idx + nrow(nnA$nn.idx)
+```
+
+```{r}
+scores <- vector(mode="numeric", length=nrow(anchors))
+for (i in 1:nrow(anchors)) {
+   anchor_1 <- anchors[i,1]
+   anchor_2 <- anchors[i,2]
+   l1 <- length(dplyr::intersect(
+      nnA$nn.idx[anchor_1,],
+      nnD$nn.idx[anchor_2-nrow(nnA$nn.idx),]
+   ))
+   l2 <- length(dplyr::intersect(
+      nnB$nn.idx[anchor_1,],
+      nnC$nn.idx[anchor_2-nrow(nnA$nn.idx),]
+   ))
+   scores[i] <- l1 + l2
+}
+# "quantile normalization as it is implemented in Seurat!"
+scores_rescaled <- 
+   (scores - quantile(scores, 0.01)) / 
+   (quantile(scores, 0.9) - quantile(scores, 0.01))
+scores_rescaled[scores_rescaled > 1] <-  1
+scores_rescaled[scores_rescaled < 0] <- 0
+hist(scores)
+hist(scores_rescaled)
+```
+
+## Weight Matrix
+
+To correct the expression matrices of $Y$, we first need to construct the weight matrix $W$, which described the association between each query cell $c$ and each anchor pair $i$. 
+
+We start by constructing the weighted distance matrix for each query cell $c$ and the `k.weight` closest anchor pairs (indexed by $i$) (meaning the query cell from this cell pair). We use the distance to the `k.weight` nearest anchor query cell as well as the anchor score $S_i$ to weight all the distances. We use the distances based on the pca of the query dataset.
+
+```{r}
+# make sure to have the right order
+stopifnot(all(rownames(embed_y) == rownames(lsi_embed)))
+```
+
+
+$$
+D_{c, i}=\left(1-\frac{\operatorname{dist}\left(c, a_{i}\right)}{\operatorname{dist}\left(c, a_{k . w e i g h t}\right)}\right) S_{a_{i}}
+$$
+
+We should be able to compute the distances in a vectorized manner 
+
+```{r}
+k.weight = 15
+query <- lsi_embed
+ref <- lsi_embed[anchors[,2] - ncol(count_matrix), ]
+dim(query)
+dim(ref)
+```
+
+```{r}
+dists <- as.matrix(pdist::pdist(query, ref))
+dim(dists)
+```
+
+However, we are actually only interested in the `k.weight` nearest anchor cells for each query cell, so we should set all the values for the other anchors 0.
+
+One easy way would be to get the 30 smallest value in each row, and then set all values larger than that to 0
+
+```{r}
+for (i in 1:nrow(dists)) {
+   if (i %% 1000 == 0) print(i)
+   cutoff <- sort(dists[i,],partial=k.weight)[k.weight]
+   dists[i, ] <- dists[i, ] / cutoff
+   dists[i, dists[i, ] > 1] <- 1
+   dists[i, ] <- 1 - dists[i, ]
+}
+```
+
+Now we multiply with the anchor scores as diagonal matrix. So we basically scale each column corresponding to an anchor by the anchor score.
+
+```{r}
+weights <- dists %*% diag(scores_rescaled)
+```
+
+```{r}
+scores_rescaled[1:6]
+
+dists[1:6, 1:6]
+
+weights[1:6, 1:6]
+```
+
+Now we apply a Gaussian kernel. So the weights decay according to a "Gaussian Curve" with increasing distance.
+
+$$
+\tilde{D}_{c, i}=1-\mathrm{e}^{\frac{-D_{c, i}}{(2 / s d)^{2}}}
+$$
+
+```{r}
+bandwidth <- 1
+weights_corrected <- 1 - exp(
+   - weights/
+      (2/bandwidth)^2
+   )
+weights_corrected[1:6, 1:6]
+```
+
+where sd is the Gaussian kernel bandwidth, set to 1 by default. 
+
+Finally, we normalize across all k.weight anchors, meaning we divide each row by the row sum.
+
+$$
+W_{c, i}=\frac{\tilde{D}_{c, i}}{\sum_{1}^{j=k . \text { weight }} \tilde{D}_{c, j}}
+$$
+
+```{r}
+W <- weights_corrected / Matrix::rowSums(weights_corrected)
+W[1:6, 1:6]
+dim(W)
+```
 
 ## Transfer Data
 
@@ -1117,6 +1385,23 @@ TODO
 For cell metadata transfer, we create a binary classification matrix $L$ containing the classification information for each anchor cell in the reference dataset. Specifically, each row in $L$ corresponds to a possible class and each column corresponds to a reference anchor. 
   
 If the reference cell in the anchor belongs to the corresponding class, that entry in the matrix is filled with a $1$, otherwise the entry is assigned a $0$.
+
+```{r}
+one_hot <- coldata %>% 
+   dplyr::select(barcode, annotation) %>%
+   mutate(ones = 1) %>%
+   pivot_wider(names_from=annotation, values_from=ones) %>%
+   replace(is.na(.), 0)
+one_hot_mtx <- as.matrix(one_hot[, -1]) %>%
+   set_rownames(one_hot$barcode) %>%
+   .[str_remove(colnames(count_matrix[, anchors[,1]]), "RNA#"), ] %>%
+   t()
+one_hot_mtx[1:6, 1:6]
+```
+  
+```{r}
+dim(one_hot_mtx)
+```
   
 We then compute label predictions, $P_{l}$, by multiplying the anchor classification matrix $L$ with the transpose of the weights matrix $W$ :
 
@@ -1126,23 +1411,126 @@ $$
 
 This returns a prediction score for each class for every cell in the query dataset that ranges from 0 to 1 , and sums to $1$.
 
-### Continuous Data
-
- Our procedure for transferring continuous data is closely related to discrete label transfer. 
- 
-We compute new feature expression predictions, $P_{f}$, by multiplying a matrix of anchor features to be transferred, $F$, with the transpose of the weights matrix $W$:
-
-$$
-P_{f}=F W^{T}
-$$
-
 In words: For a given query cell $c$ we get a the sum of the classes of their closest anchor cells weighted by the distance and the score of that anchor pair.
 
 ```{r, echo=FALSE, out.width="100%", fig.align='center'}
 knitr::include_graphics("img/discrete_transfer.png")
 ```
 
+```{r}
+dim(W)
+```
+
+
+```{r}
+Pl <- one_hot_mtx %*% t(W)
+dim(Pl)
+```
+
+```{r}
+Pl[1:6, 1:6]
+```
+
+What is the maximum score for each cell? For most cells we are very certain.
+
+```{r}
+ggplot() +
+   geom_histogram(aes(x=matrixStats::colMaxs(Pl)), bins=50)
+```
+
+So let's assign to each cell the label with the highest score.
+
+```{r}
+predicted_types <- tibble(barcode = rownames(embed_y),
+                          pred_type = rownames(Pl)[apply(Pl, 2, function(x) which.max(x))])
+predicted_types %>%
+   ggplot() +
+   geom_bar(aes(x=pred_type)) +
+   theme(axis.text.x = element_text(angle=30, hjust=1))
+```
+
+Now we can compare these labels with the "real" labels (because we have multiome data!).
+
+```{r}
+predicted_types <- predicted_types %>%
+   mutate(barcode_raw = str_remove(barcode, "ATAC#")) %>%
+   left_join(coldata, by=c("barcode_raw" = "barcode"))
+
+conf_mtx <- matrix(data=0, nrow=length(unique(predicted_types$annotation)),
+                   ncol=length(unique(predicted_types$annotation)))
+rownames(conf_mtx) <- unique(predicted_types$annotation)
+colnames(conf_mtx) <- unique(predicted_types$annotation)
+
+for (check_type in rownames(conf_mtx)) {
+  check_barcodes <- predicted_types$barcode[predicted_types$annotation==check_type]
+  ctx <- predicted_types$pred_type[predicted_types$annotation==check_type] %>% table
+  for (ct in names(ctx)) {conf_mtx[check_type,ct] = ctx[ct]}
+}
+
+rel_conf_mtx <- conf_mtx / rowSums(conf_mtx)
+
+ComplexHeatmap::pheatmap(rel_conf_mtx, cluster_rows = F, cluster_cols = F,
+                         column_names_side = c("top"),
+                         row_names_side = c("left"),
+                         angle_col = c("45"),
+                         column_title = "Predicted Celltype",
+                         row_title = "Actual Celltype")
+```
+
+So this looks ok I guess.
+
+### Continuous Data
+
+Our procedure for transferring continuous data is closely related to discrete label transfer. 
+ 
+We compute new feature expression predictions, $P_{f}$, by multiplying a matrix of anchor features to be transferred, $F$ (where again row corresponds to a feature and each col to a cell), with the transpose of the weights matrix $W$:
+
+$$
+P_{f}=F W^{T}
+$$
+
+```{r}
+FF <- count_matrix[, anchors[,1]]
+dim(FF)
+```
+
+```{r}
+Pf <- FF %*% t(W)
+Pf <- MatrixExtra::as.csc.matrix(Pf)
+colnames(Pf) <- rownames(embed_y)
+dim(Pf)
+```
+
+```{r}
+Pf[1:6, 1:6]
+```
+
 This returns a predicted expression matrix for each feature (row) in $F$ for each cell in the query dataset.
+
+How well does the imputed/transferred gene expression correlate with the real gene expression? We will compute the correlation for each cell.
+
+```{r}
+comp_1 <- Pf
+comp_2 <- count_matrix
+colnames(comp_1) <- str_remove(colnames(comp_1), "[^#]+#")
+colnames(comp_2) <- str_remove(colnames(comp_2), "[^#]+#")
+
+# reorder comp_1
+dim(comp_1)
+comp_1 <- comp_1[, colnames(comp_2)]
+dim(comp_1)
+```
+
+```{r}
+cors <- purrr::map_dfr(1:ncol(comp_1), ~ tibble(barcode = colnames(comp_1)[.x],
+                                                correlation = cor(comp_1[, .x],
+                                                                  comp_2[, .x])))
+cors %>%
+   ggplot() +
+   geom_histogram(aes(x=correlation), bins=50)
+```
+
+And it looks pretty good!
 
 # Questions
 

@@ -29,7 +29,7 @@ The goals are:
 knitr::opts_chunk$set(echo = TRUE)
 library(reticulate)
 Sys.setenv(RETICULATE_PYTHON =
-             "/home/pschaefer/miniconda3/envs/r-reticulate/bin/python")
+             "/home/philipp/miniconda3/envs/r-reticulate/bin/python")
 timestamp <- format(Sys.time(), "%Y-%m-%d-%H-%M")
 s <- 4242
 ```

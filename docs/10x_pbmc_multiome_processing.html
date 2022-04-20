@@ -390,7 +390,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">10X PBMC GEX Processing</h1>
 <h4 class="author">Philipp SL Schäfer</h4>
-<h4 class="date">2022-04-12-14-09</h4>
+<h4 class="date">2022-04-20-14-59</h4>
 
 </div>
 
@@ -413,7 +413,7 @@ div.tocify {
 <pre class="r"><code>knitr::opts_chunk$set(echo = TRUE)
 library(reticulate)
 Sys.setenv(RETICULATE_PYTHON =
-             &quot;/home/pschaefer/miniconda3/envs/r-reticulate/bin/python&quot;)
+             &quot;/home/philipp/miniconda3/envs/r-reticulate/bin/python&quot;)
 timestamp &lt;- format(Sys.time(), &quot;%Y-%m-%d-%H-%M&quot;)
 s &lt;- 4242</code></pre>
 <p>Loading Packages</p>
@@ -428,6 +428,7 @@ s &lt;- 4242</code></pre>
   library(ggside)
   library(ArchR)
   library(parallel)
+  library(clustree)
 })</code></pre>
 </div>
 <div id="import-data" class="section level1">
@@ -748,64 +749,64 @@ ArrowFiles &lt;- createArrowFiles(
   offsetMinus = -5, 
   force = TRUE
 )</code></pre>
-<pre><code>## ArchR logging to : ArchRLogs/ArchR-createArrows-e2421a4be882-Date-2022-04-12_Time-14-10-21.log
+<pre><code>## ArchR logging to : ArchRLogs/ArchR-createArrows-41844217fe09-Date-2022-04-20_Time-15-00-52.log
 ## If there is an issue, please report to github with logFile!</code></pre>
 <pre><code>## Cleaning Temporary Files</code></pre>
-<pre><code>## 2022-04-12 14:10:21 : Batch Execution w/ safelapply!, 0 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:00:52 : Batch Execution w/ safelapply!, 0 mins elapsed.</code></pre>
 <pre><code>## (pbmc_1 : 1 of 1) Checking if completed file exists!</code></pre>
-<pre><code>## 2022-04-12 14:10:21 : (pbmc_1 : 1 of 1) Arrow Exists! Overriding since force = TRUE!, 0 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:00:52 : (pbmc_1 : 1 of 1) Arrow Exists! Overriding since force = TRUE!, 0.002 mins elapsed.</code></pre>
 <pre><code>## (pbmc_1 : 1 of 1) Determining Arrow Method to use!</code></pre>
-<pre><code>## 2022-04-12 14:10:22 : (pbmc_1 : 1 of 1) Reading In Fragments from inputFiles (readMethod = tabix), 0.004 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:10:22 : (pbmc_1 : 1 of 1) Tabix Bed To Temporary File, 0.004 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:00:52 : (pbmc_1 : 1 of 1) Reading In Fragments from inputFiles (readMethod = tabix), 0.002 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:00:52 : (pbmc_1 : 1 of 1) Tabix Bed To Temporary File, 0.002 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:11:25 : (pbmc_1 : 1 of 1) Reading TabixFile 8 Percent, 1.069 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:01:56 : (pbmc_1 : 1 of 1) Reading TabixFile 8 Percent, 1.063 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:12:11 : (pbmc_1 : 1 of 1) Reading TabixFile 17 Percent, 1.823 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:02:41 : (pbmc_1 : 1 of 1) Reading TabixFile 17 Percent, 1.814 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:12:53 : (pbmc_1 : 1 of 1) Reading TabixFile 25 Percent, 2.523 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:03:23 : (pbmc_1 : 1 of 1) Reading TabixFile 25 Percent, 2.515 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:13:30 : (pbmc_1 : 1 of 1) Reading TabixFile 33 Percent, 3.144 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:04:00 : (pbmc_1 : 1 of 1) Reading TabixFile 33 Percent, 3.135 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:14:08 : (pbmc_1 : 1 of 1) Reading TabixFile 42 Percent, 3.77 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:04:38 : (pbmc_1 : 1 of 1) Reading TabixFile 42 Percent, 3.761 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:14:48 : (pbmc_1 : 1 of 1) Reading TabixFile 50 Percent, 4.446 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:05:19 : (pbmc_1 : 1 of 1) Reading TabixFile 50 Percent, 4.44 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:15:16 : (pbmc_1 : 1 of 1) Reading TabixFile 58 Percent, 4.903 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:05:46 : (pbmc_1 : 1 of 1) Reading TabixFile 58 Percent, 4.901 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:15:48 : (pbmc_1 : 1 of 1) Reading TabixFile 67 Percent, 5.44 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:06:19 : (pbmc_1 : 1 of 1) Reading TabixFile 67 Percent, 5.44 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:16:22 : (pbmc_1 : 1 of 1) Reading TabixFile 75 Percent, 6.014 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:06:53 : (pbmc_1 : 1 of 1) Reading TabixFile 75 Percent, 6.019 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:16:58 : (pbmc_1 : 1 of 1) Reading TabixFile 83 Percent, 6.611 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:07:29 : (pbmc_1 : 1 of 1) Reading TabixFile 83 Percent, 6.621 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:17:16 : (pbmc_1 : 1 of 1) Reading TabixFile 92 Percent, 6.907 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:07:47 : (pbmc_1 : 1 of 1) Reading TabixFile 92 Percent, 6.918 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:17:34 : (pbmc_1 : 1 of 1) Reading TabixFile 100 Percent, 7.207 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:17:34 : (pbmc_1 : 1 of 1) Successful creation of Temporary File, 7.219 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:17:34 : (pbmc_1 : 1 of 1) Creating ArrowFile From Temporary File, 7.219 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:19:17 : (pbmc_1 : 1 of 1) Successful creation of Arrow File, 8.935 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:20:59 : (pbmc_1 : 1 of 1) CellStats : Number of Cells Pass Filter = 11701 , 10.636 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:20:59 : (pbmc_1 : 1 of 1) CellStats : Median Frags = 13565 , 10.636 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:20:59 : (pbmc_1 : 1 of 1) CellStats : Median TSS Enrichment = 13.597 , 10.636 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:21:02 : (pbmc_1 : 1 of 1) Adding Additional Feature Counts!, 10.672 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:22:19 : (pbmc_1 : 1 of 1) Removing Fragments from Filtered Cells, 11.963 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:22:19 : (pbmc_1 : 1 of 1) Creating Filtered Arrow File, 11.963 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:22:53 : (pbmc_1 : 1 of 1) Finished Constructing Filtered Arrow File!, 12.531 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:22:53 : (pbmc_1 : 1 of 1) Adding TileMatrix!, 12.532 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:24:34 : (pbmc_1 : 1 of 1) Finished Creating Arrow File, 14.214 mins elapsed.</code></pre>
-<pre><code>## ArchR logging successful to : ArchRLogs/ArchR-createArrows-e2421a4be882-Date-2022-04-12_Time-14-10-21.log</code></pre>
+<pre><code>## 2022-04-20 15:08:05 : (pbmc_1 : 1 of 1) Reading TabixFile 100 Percent, 7.221 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:08:06 : (pbmc_1 : 1 of 1) Successful creation of Temporary File, 7.233 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:08:06 : (pbmc_1 : 1 of 1) Creating ArrowFile From Temporary File, 7.233 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:09:50 : (pbmc_1 : 1 of 1) Successful creation of Arrow File, 8.958 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:11:33 : (pbmc_1 : 1 of 1) CellStats : Number of Cells Pass Filter = 11701 , 10.676 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:11:33 : (pbmc_1 : 1 of 1) CellStats : Median Frags = 13565 , 10.676 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:11:33 : (pbmc_1 : 1 of 1) CellStats : Median TSS Enrichment = 13.597 , 10.676 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:11:35 : (pbmc_1 : 1 of 1) Adding Additional Feature Counts!, 10.712 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:12:53 : (pbmc_1 : 1 of 1) Removing Fragments from Filtered Cells, 12.012 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:12:53 : (pbmc_1 : 1 of 1) Creating Filtered Arrow File, 12.012 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:13:28 : (pbmc_1 : 1 of 1) Finished Constructing Filtered Arrow File!, 12.596 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:13:28 : (pbmc_1 : 1 of 1) Adding TileMatrix!, 12.597 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:15:11 : (pbmc_1 : 1 of 1) Finished Creating Arrow File, 14.314 mins elapsed.</code></pre>
+<pre><code>## ArchR logging successful to : ArchRLogs/ArchR-createArrows-41844217fe09-Date-2022-04-20_Time-15-00-52.log</code></pre>
 <p>Get the QC stats</p>
 <pre class="r"><code>pre_filter_meta &lt;- purrr::map_dfr(
   list.dirs(paste0(output_dir, &quot;Pre_Consensus_ArchR_QC&quot;), recursive = FALSE),
@@ -844,65 +845,65 @@ ArrowFiles &lt;- createArrowFiles(
   offsetMinus = -5, 
   force = TRUE
 )</code></pre>
-<pre><code>## ArchR logging to : ArchRLogs/ArchR-createArrows-e2426ff25dd6-Date-2022-04-12_Time-14-24-35.log
+<pre><code>## ArchR logging to : ArchRLogs/ArchR-createArrows-418446f35ed-Date-2022-04-20_Time-15-15-12.log
 ## If there is an issue, please report to github with logFile!</code></pre>
 <pre><code>## Cleaning Temporary Files</code></pre>
-<pre><code>## 2022-04-12 14:24:35 : Batch Execution w/ safelapply!, 0 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:15:12 : Batch Execution w/ safelapply!, 0 mins elapsed.</code></pre>
 <pre><code>## (pbmc_1 : 1 of 1) Checking if completed file exists!</code></pre>
-<pre><code>## 2022-04-12 14:24:35 : (pbmc_1 : 1 of 1) Arrow Exists! Overriding since force = TRUE!, 0 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:15:12 : (pbmc_1 : 1 of 1) Arrow Exists! Overriding since force = TRUE!, 0 mins elapsed.</code></pre>
 <pre><code>## (pbmc_1 : 1 of 1) Determining Arrow Method to use!</code></pre>
-<pre><code>## 2022-04-12 14:24:35 : (pbmc_1 : 1 of 1) Reading In Fragments from inputFiles (readMethod = tabix), 0.003 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:24:35 : (pbmc_1 : 1 of 1) Tabix Bed To Temporary File, 0.003 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:15:12 : (pbmc_1 : 1 of 1) Reading In Fragments from inputFiles (readMethod = tabix), 0.003 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:15:12 : (pbmc_1 : 1 of 1) Tabix Bed To Temporary File, 0.003 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:25:36 : (pbmc_1 : 1 of 1) Reading TabixFile 8 Percent, 1.011 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:16:13 : (pbmc_1 : 1 of 1) Reading TabixFile 8 Percent, 1.015 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:26:20 : (pbmc_1 : 1 of 1) Reading TabixFile 17 Percent, 1.758 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:16:58 : (pbmc_1 : 1 of 1) Reading TabixFile 17 Percent, 1.766 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:27:02 : (pbmc_1 : 1 of 1) Reading TabixFile 25 Percent, 2.453 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:17:39 : (pbmc_1 : 1 of 1) Reading TabixFile 25 Percent, 2.462 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:27:39 : (pbmc_1 : 1 of 1) Reading TabixFile 33 Percent, 3.068 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:18:16 : (pbmc_1 : 1 of 1) Reading TabixFile 33 Percent, 3.077 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:28:16 : (pbmc_1 : 1 of 1) Reading TabixFile 42 Percent, 3.686 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:18:54 : (pbmc_1 : 1 of 1) Reading TabixFile 42 Percent, 3.698 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:28:56 : (pbmc_1 : 1 of 1) Reading TabixFile 50 Percent, 4.358 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:19:34 : (pbmc_1 : 1 of 1) Reading TabixFile 50 Percent, 4.372 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:29:24 : (pbmc_1 : 1 of 1) Reading TabixFile 58 Percent, 4.811 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:20:01 : (pbmc_1 : 1 of 1) Reading TabixFile 58 Percent, 4.827 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:29:56 : (pbmc_1 : 1 of 1) Reading TabixFile 67 Percent, 5.344 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:20:34 : (pbmc_1 : 1 of 1) Reading TabixFile 67 Percent, 5.363 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:30:30 : (pbmc_1 : 1 of 1) Reading TabixFile 75 Percent, 5.916 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:21:08 : (pbmc_1 : 1 of 1) Reading TabixFile 75 Percent, 5.937 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:31:06 : (pbmc_1 : 1 of 1) Reading TabixFile 83 Percent, 6.511 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:21:44 : (pbmc_1 : 1 of 1) Reading TabixFile 83 Percent, 6.533 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:31:23 : (pbmc_1 : 1 of 1) Reading TabixFile 92 Percent, 6.807 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:22:02 : (pbmc_1 : 1 of 1) Reading TabixFile 92 Percent, 6.831 mins elapsed.</code></pre>
 <pre><code>## Warning in sprintf(&quot;%s Reading TabixFile %s Percent&quot;, prefix, round(100 * : one
 ## argument not used by format &#39;%s Reading TabixFile %s Percent&#39;</code></pre>
-<pre><code>## 2022-04-12 14:31:41 : (pbmc_1 : 1 of 1) Reading TabixFile 100 Percent, 7.107 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:31:42 : (pbmc_1 : 1 of 1) Successful creation of Temporary File, 7.119 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:31:42 : (pbmc_1 : 1 of 1) Creating ArrowFile From Temporary File, 7.119 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:33:23 : (pbmc_1 : 1 of 1) Successful creation of Arrow File, 8.802 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:35:03 : (pbmc_1 : 1 of 1) CellStats : Number of Cells Pass Filter = 9969 , 10.461 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:35:03 : (pbmc_1 : 1 of 1) CellStats : Median Frags = 14261 , 10.461 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:35:03 : (pbmc_1 : 1 of 1) CellStats : Median TSS Enrichment = 13.672 , 10.461 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:35:04 : (pbmc_1 : 1 of 1) Adding Additional Feature Counts!, 10.493 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:36:20 : (pbmc_1 : 1 of 1) Removing Fragments from Filtered Cells, 11.759 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:36:20 : (pbmc_1 : 1 of 1) Creating Filtered Arrow File, 11.759 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:36:52 : (pbmc_1 : 1 of 1) Finished Constructing Filtered Arrow File!, 12.288 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:36:52 : (pbmc_1 : 1 of 1) Adding TileMatrix!, 12.289 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:38:25 : (pbmc_1 : 1 of 1) Adding GeneScoreMatrix!, 13.832 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:40:37 : (pbmc_1 : 1 of 1) Finished Creating Arrow File, 16.031 mins elapsed.</code></pre>
-<pre><code>## ArchR logging successful to : ArchRLogs/ArchR-createArrows-e2426ff25dd6-Date-2022-04-12_Time-14-24-35.log</code></pre>
+<pre><code>## 2022-04-20 15:22:20 : (pbmc_1 : 1 of 1) Reading TabixFile 100 Percent, 7.132 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:22:20 : (pbmc_1 : 1 of 1) Successful creation of Temporary File, 7.144 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:22:20 : (pbmc_1 : 1 of 1) Creating ArrowFile From Temporary File, 7.144 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:24:01 : (pbmc_1 : 1 of 1) Successful creation of Arrow File, 8.827 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:25:42 : (pbmc_1 : 1 of 1) CellStats : Number of Cells Pass Filter = 9969 , 10.498 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:25:42 : (pbmc_1 : 1 of 1) CellStats : Median Frags = 14261 , 10.498 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:25:42 : (pbmc_1 : 1 of 1) CellStats : Median TSS Enrichment = 13.672 , 10.498 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:25:44 : (pbmc_1 : 1 of 1) Adding Additional Feature Counts!, 10.53 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:27:00 : (pbmc_1 : 1 of 1) Removing Fragments from Filtered Cells, 11.799 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:27:00 : (pbmc_1 : 1 of 1) Creating Filtered Arrow File, 11.799 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:27:32 : (pbmc_1 : 1 of 1) Finished Constructing Filtered Arrow File!, 12.335 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:27:32 : (pbmc_1 : 1 of 1) Adding TileMatrix!, 12.336 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:29:06 : (pbmc_1 : 1 of 1) Adding GeneScoreMatrix!, 13.903 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:31:18 : (pbmc_1 : 1 of 1) Finished Creating Arrow File, 16.109 mins elapsed.</code></pre>
+<pre><code>## ArchR logging successful to : ArchRLogs/ArchR-createArrows-418446f35ed-Date-2022-04-20_Time-15-15-12.log</code></pre>
 <p>We will also check for doublets here.</p>
 <pre class="r"><code>doublet_scores_atac &lt;- addDoubletScores(
   input = ArrowFiles,
@@ -991,11 +992,11 @@ fragment_sizes &lt;- plotFragmentSizes(ArchRProj = proj, groupBy = &quot;Sample&
 <pre><code>## Setting default number of Parallel threads to 1.</code></pre>
 <pre class="r"><code>tss_enrichment &lt;- plotTSSEnrichment(ArchRProj = proj, groupBy = &quot;Sample&quot;, 
                                     returnDF = TRUE)</code></pre>
-<pre><code>## ArchR logging to : ArchRLogs/ArchR-plotTSSEnrichment-e24264b20f7a-Date-2022-04-12_Time-14-45-25.log
+<pre><code>## ArchR logging to : ArchRLogs/ArchR-plotTSSEnrichment-418450caef22-Date-2022-04-20_Time-15-36-09.log
 ## If there is an issue, please report to github with logFile!</code></pre>
-<pre><code>## 2022-04-12 14:45:26 : pbmc_1 Computing TSS (1 of 1)!, 0.003 mins elapsed.</code></pre>
-<pre><code>## 2022-04-12 14:47:19 : pbmc_1 Finished Computing TSS (1 of 1)!, 1.89 mins elapsed.</code></pre>
-<pre><code>## ArchR logging successful to : ArchRLogs/ArchR-plotTSSEnrichment-e24264b20f7a-Date-2022-04-12_Time-14-45-25.log</code></pre>
+<pre><code>## 2022-04-20 15:36:09 : pbmc_1 Computing TSS (1 of 1)!, 0.003 mins elapsed.</code></pre>
+<pre><code>## 2022-04-20 15:38:02 : pbmc_1 Finished Computing TSS (1 of 1)!, 1.894 mins elapsed.</code></pre>
+<pre><code>## ArchR logging successful to : ArchRLogs/ArchR-plotTSSEnrichment-418450caef22-Date-2022-04-20_Time-15-36-09.log</code></pre>
 <pre class="r"><code>tibble::as_tibble(tss_enrichment) %&gt;%
   ggplot() +
   geom_line(aes(x=x, y=smoothValue, color=group)) +
@@ -1255,7 +1256,7 @@ paste0(&quot;In total &quot;, length(doublet_barcodes), &quot; doublets will be 
 </div>
 <p>Check the putative doublets in our plots. And everything looks as expected.</p>
 <pre class="r"><code>coldata %&gt;%
-  filter(non_empty) %&gt;%
+  filter(Keep == 1, qc_pass) %&gt;%
   drop_na() %&gt;%
   ggplot(aes(x=score, y=dbl_score_atac)) +
   geom_point(aes(color=is_doublet), size=0.4, alpha=0.4) +
@@ -1281,7 +1282,8 @@ paste0(&quot;In total &quot;, length(doublet_barcodes), &quot; doublets will be 
 <p>Subsetting the count matrix.</p>
 <pre class="r"><code>dim(consensus_rna)</code></pre>
 <pre><code>## [1] 29972  9522</code></pre>
-<pre class="r"><code>consensus_rna_dbl &lt;- consensus_rna[, !(colnames(consensus_rna) %in% doublet_barcodes)]
+<pre class="r"><code>consensus_coldata &lt;- coldata %&gt;% filter(!is_doublet, non_empty, qc_pass, Keep==1)
+consensus_rna_dbl &lt;- consensus_rna[, colnames(consensus_rna) %in% consensus_coldata$barcode]
 dim(consensus_rna_dbl)</code></pre>
 <pre><code>## [1] 29972  8605</code></pre>
 <pre class="r"><code>dim(ArchR::getCellColData(consensus_proj))</code></pre>
@@ -1290,29 +1292,312 @@ dim(consensus_rna_dbl)</code></pre>
 dim(ArchR::getCellColData(consensus_proj_dbl))</code></pre>
 <pre><code>## [1] 8605   16</code></pre>
 </div>
+<div id="dimensionality-reduction" class="section level1">
+<h1>Dimensionality Reduction</h1>
+<div id="rna" class="section level2">
+<h2>RNA</h2>
+<p>Here we use the vst method to identify highly variable genes and then PCA on the log-normalized counts.</p>
+<pre class="r"><code>log_norm &lt;- function(mtx, sf=1e4) {
+   log1p(
+      t( t(mtx) / sparseMatrixStats::colSums2(mtx) ) * sf
+   )
+}
+
+hvg_vst_method &lt;- function(mtx, plotting=F) {
+   df &lt;- tibble(gene = rownames(mtx), 
+                mean = Matrix::rowMeans(mtx),
+                var = sparseMatrixStats::rowVars(mtx)) %&gt;%
+      mutate(log10.mean = log10(mean), 
+             log10.var = log10(var)) %&gt;%
+     filter(is.finite(log10.var))
+   l.fit &lt;- stats::loess(formula = log10.var ~ log10.mean, data = df, span = 0.3)
+   df &lt;- df %&gt;%
+     mutate(pred.log10.var = predict(l.fit, log10.mean)) %&gt;%
+     mutate(pred.var = 10^pred.log10.var)
+   if (plotting) {
+      p &lt;- 
+         ggplot() +
+        geom_point(aes(x=df$log10.mean, y=df$log10.var),
+                   size = 0.2)  +
+        geom_line(aes(x=df$log10.mean, y=l.fit$fitted), color = &quot;blue&quot;) +
+        labs(x = &quot;log10 Mean&quot;, y = &quot;log10 Variance&quot;, 
+             title = &quot;Loess Fit&quot;) +
+        scale_color_manual(values = c(&quot;TRUE&quot; = &quot;forestgreen&quot;, &quot;FALSE&quot; = &quot;red&quot;)) +
+        coord_equal()
+      print(p)
+   }
+   gene_mean_subtracted &lt;- mtx - df$mean
+   exp_var_divided &lt;- gene_mean_subtracted / (df$pred.var)^0.5
+   clip &lt;- ncol(mtx)^0.5
+   exp_var_divided[exp_var_divided &gt; clip] &lt;- clip
+   exp_var_divided &lt;- Matrix::Matrix(exp_var_divided, sparse=TRUE)
+   
+   df &lt;- df %&gt;%
+     mutate(std.var = sparseMatrixStats::rowVars(exp_var_divided))
+   if (plotting) {
+      p &lt;- 
+         df %&gt;%
+           ggplot() +
+           geom_point(aes(x=log10.mean, y=std.var),
+                      size = 0.2, alpha = 0.5) +
+           labs(x = &quot;log10 Mean Expression&quot;, y = &quot;Standardized Variance&quot;, 
+                title = &quot;Standardized Variance&quot;) +
+           scale_color_manual(values = c(&quot;TRUE&quot; = &quot;forestgreen&quot;, &quot;FALSE&quot; = &quot;red&quot;)) +
+           guides(colour = guide_legend(override.aes = list(size = 2)))
+      print(p)
+   }
+   df
+}</code></pre>
+<p>First we need to remove genes with zero variance.</p>
+<pre class="r"><code>consensus_rna_dbl &lt;- consensus_rna_dbl[sparseMatrixStats::rowVars(consensus_rna_dbl) &gt; 0, ]</code></pre>
+<p>Then compute highly variable genes.</p>
+<pre class="r"><code>hvg_rna &lt;- hvg_vst_method(consensus_rna_dbl, plotting = TRUE) %&gt;%
+  slice_max(std.var, n=2000) %&gt;%
+  pull(gene)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-64-1.png" width="672" /><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-64-2.png" width="672" /></p>
+<p>And finally PCA.</p>
+<pre class="r"><code>pca_rna &lt;- consensus_rna_dbl %&gt;%
+  log_norm() %&gt;%
+  .[hvg_rna, ] %&gt;%
+  t() %&gt;%
+  irlba::prcomp_irlba(n = 50, retx = TRUE, center = TRUE, scale. = TRUE) %&gt;%
+  .$x %&gt;%
+  set_rownames(colnames(consensus_rna_dbl))</code></pre>
+<p>Also have a look at the UMAP.</p>
+<pre class="r"><code>umap_rna &lt;- uwot::umap(X=pca_rna, n_neighbors=30, metric=&quot;cosine&quot;)</code></pre>
+<pre class="r"><code>ggplot() +
+  geom_point(aes(x=umap_rna[,1],
+                 y=umap_rna[,2],
+                 color=consensus_coldata$sample),
+             size=0.1, alpha=0.5) +
+  labs(x = &quot;UMAP 1&quot;, y = &quot;UMAP 2&quot;, color = &quot;Sample&quot;) +
+  guides(colour = guide_legend(override.aes = list(size = 2)))</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-67-1.png" width="768" /></p>
+</div>
+<div id="atac" class="section level2">
+<h2>ATAC</h2>
+<p>Here we will use iterative LSI as it is implemented in ArchR.</p>
+<pre class="r"><code>quiet_lsi &lt;- purrr::quietly(ArchR::addIterativeLSI)
+
+quiet_run &lt;- quiet_lsi(
+    ArchRProj = consensus_proj_dbl, 
+    useMatrix = &quot;TileMatrix&quot;, 
+    iterations = 5,
+    clusterParams = list(
+      resolution = c(0.1, 0.2, 0.4, 0.8), 
+      sampleCells = 10000,
+      n.start = 10
+    ),
+    saveIterations = FALSE,
+    depthCol = &quot;nFrags&quot;,
+    varFeatures = 100000,
+    firstSelection = &quot;top&quot;, 
+    binarize = TRUE,
+    name = &quot;LSI_ATAC&quot;,
+    corCutOff = 0.75,
+    force = TRUE,
+    seed = s
+  )
+
+consensus_proj_dbl &lt;- quiet_run$result</code></pre>
+<details>
+<summary>
+Check the messages from messages
+</summary>
+<pre class="r"><code># displaying messages
+options(max.print=1e5)
+print(quiet_run$messages)</code></pre>
+<pre><code>##  [1] &quot;Checking Inputs...\n&quot;                                                                                                                                            
+##  [2] &quot;ArchR logging to : ArchRLogs/ArchR-addIterativeLSI-4184155c4566-Date-2022-04-20_Time-15-38-52.log\nIf there is an issue, please report to github with logFile!\n&quot;
+##  [3] &quot;2022-04-20 15:38:52 : Computing Total Across All Features, 0 mins elapsed.\n&quot;                                                                                    
+##  [4] &quot;2022-04-20 15:38:53 : Computing Top Features, 0.007 mins elapsed.\n&quot;                                                                                             
+##  [5] &quot;###########\n2022-04-20 15:38:54 : Running LSI (1 of 5) on Top Features, 0.024 mins elapsed.\n###########\n&quot;                                                     
+##  [6] &quot;2022-04-20 15:38:54 : Creating Partial Matrix, 0.024 mins elapsed.\n&quot;                                                                                            
+##  [7] &quot;2022-04-20 15:39:15 : Computing LSI, 0.385 mins elapsed.\n&quot;                                                                                                      
+##  [8] &quot;2022-04-20 15:39:54 : Identifying Clusters, 1.033 mins elapsed.\n&quot;                                                                                               
+##  [9] &quot;2022-04-20 15:40:01 : Identified 7 Clusters, 1.148 mins elapsed.\n&quot;                                                                                              
+## [10] &quot;2022-04-20 15:40:01 : Creating Cluster Matrix on the total Group Features, 1.148 mins elapsed.\n&quot;                                                                
+## [11] &quot;2022-04-20 15:40:38 : Computing Variable Features, 1.765 mins elapsed.\n&quot;                                                                                        
+## [12] &quot;###########\n2022-04-20 15:40:38 : Running LSI (2 of 5) on Variable Features, 1.766 mins elapsed.\n###########\n&quot;                                                
+## [13] &quot;2022-04-20 15:40:38 : Creating Partial Matrix, 1.766 mins elapsed.\n&quot;                                                                                            
+## [14] &quot;2022-04-20 15:41:00 : Computing LSI, 2.13 mins elapsed.\n&quot;                                                                                                       
+## [15] &quot;2022-04-20 15:41:35 : Identifying Clusters, 2.706 mins elapsed.\n&quot;                                                                                               
+## [16] &quot;2022-04-20 15:41:42 : Identified 10 Clusters, 2.821 mins elapsed.\n&quot;                                                                                             
+## [17] &quot;2022-04-20 15:41:42 : Creating Cluster Matrix on the total Group Features, 2.834 mins elapsed.\n&quot;                                                                
+## [18] &quot;2022-04-20 15:42:20 : Computing Variable Features, 3.453 mins elapsed.\n&quot;                                                                                        
+## [19] &quot;###########\n2022-04-20 15:42:20 : Running LSI (3 of 5) on Variable Features, 3.455 mins elapsed.\n###########\n&quot;                                                
+## [20] &quot;2022-04-20 15:42:20 : Creating Partial Matrix, 3.455 mins elapsed.\n&quot;                                                                                            
+## [21] &quot;2022-04-20 15:42:42 : Computing LSI, 3.82 mins elapsed.\n&quot;                                                                                                       
+## [22] &quot;2022-04-20 15:43:26 : Identifying Clusters, 4.553 mins elapsed.\n&quot;                                                                                               
+## [23] &quot;2022-04-20 15:43:32 : Identified 14 Clusters, 4.666 mins elapsed.\n&quot;                                                                                             
+## [24] &quot;2022-04-20 15:43:33 : Creating Cluster Matrix on the total Group Features, 4.679 mins elapsed.\n&quot;                                                                
+## [25] &quot;2022-04-20 15:44:11 : Computing Variable Features, 5.305 mins elapsed.\n&quot;                                                                                        
+## [26] &quot;###########\n2022-04-20 15:44:11 : Running LSI (4 of 5) on Variable Features, 5.308 mins elapsed.\n###########\n&quot;                                                
+## [27] &quot;2022-04-20 15:44:11 : Creating Partial Matrix, 5.308 mins elapsed.\n&quot;                                                                                            
+## [28] &quot;2022-04-20 15:44:33 : Computing LSI, 5.675 mins elapsed.\n&quot;                                                                                                      
+## [29] &quot;2022-04-20 15:45:07 : Identifying Clusters, 6.245 mins elapsed.\n&quot;                                                                                               
+## [30] &quot;2022-04-20 15:45:14 : Identified 16 Clusters, 6.358 mins elapsed.\n&quot;                                                                                             
+## [31] &quot;2022-04-20 15:45:15 : Creating Cluster Matrix on the total Group Features, 6.372 mins elapsed.\n&quot;                                                                
+## [32] &quot;2022-04-20 15:45:52 : Computing Variable Features, 7.001 mins elapsed.\n&quot;                                                                                        
+## [33] &quot;###########\n2022-04-20 15:45:53 : Running LSI (5 of 5) on Variable Features, 7.004 mins elapsed.\n###########\n&quot;                                                
+## [34] &quot;2022-04-20 15:45:53 : Creating Partial Matrix, 7.004 mins elapsed.\n&quot;                                                                                            
+## [35] &quot;2022-04-20 15:46:15 : Computing LSI, 7.384 mins elapsed.\n&quot;                                                                                                      
+## [36] &quot;2022-04-20 15:46:51 : Finished Running IterativeLSI, 7.981 mins elapsed.\n&quot;</code></pre>
+<pre class="r"><code>rm(quiet_run)</code></pre>
+<p>Let’s have a look at a UMAP based on the LSI embedding.</p>
+<pre class="r"><code>consensus_proj_dbl &lt;- addUMAP(
+    ArchRProj = consensus_proj_dbl, 
+    reducedDims = &quot;LSI_ATAC&quot;, 
+    name = &quot;UMAP_LSI_ATAC&quot;, 
+    nNeighbors = 30, 
+    minDist = 0.5, 
+    metric = &quot;cosine&quot;, 
+    force = TRUE, 
+    verbose = FALSE
+)</code></pre>
+<pre class="r"><code>ggplot() +
+  geom_point(aes(x=consensus_proj_dbl@embeddings$UMAP_LSI_ATAC$df[,1],
+                 y=consensus_proj_dbl@embeddings$UMAP_LSI_ATAC$df[,2],
+                 color=consensus_proj_dbl$Sample),
+             size=0.1, alpha=0.5) +
+  labs(x = &quot;UMAP 1&quot;, y = &quot;UMAP 2&quot;, color = &quot;Sample&quot;) +
+  guides(colour = guide_legend(override.aes = list(size = 2)))</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-71-1.png" width="768" /></p>
+</div>
+</div>
+<div id="annotation" class="section level1">
+<h1>Annotation</h1>
+<p>We will do some graph based clustering and then check for canonical markers in each cluster.</p>
+<p>We will check several different resolutions to get the desired number of clusters (since we want to start with a coarse-grained cell type assignment).</p>
+<p>First we need to create the shared-nearest-neighbor graphs (using <code>bluster</code>).</p>
+<pre class="r"><code>set.seed(s)
+snn_log &lt;- bluster::makeSNNGraph(pca_rna[,1:30], k = 20)</code></pre>
+<p>Now we can cluster using the Leiden algorithm.</p>
+<p>First the log-transformed data.</p>
+<pre class="r"><code>testing_resolutions &lt;- c(0.01, 0.02, 0.04, 0.08, 0.12) %&gt;%
+  set_names(paste0(&quot;res_&quot;, .))
+#print(paste0(&quot;Testing the following resolution: &quot;, testing_resolutions))
+clusters &lt;- purrr::map_dfc(testing_resolutions, function(res) {
+  # igraph::cluster_louvain
+  set.seed(s)
+  igraph::cluster_leiden(snn_log, 
+                         resolution_parameter = res,
+                         )$membership
+})
+suppressWarnings(
+  clustree(as.data.frame(clusters), prefix = &quot;res_&quot;)
+)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-73-1.png" width="768" /></p>
+<p>We will chose a resolution of <code>0.08</code> for the initial clusters.</p>
+<pre class="r"><code>set.seed(s)
+clusters_rna &lt;- igraph::cluster_leiden(snn_log, resolution_parameter = 0.08,
+                         )$membership
+table(clusters_rna)</code></pre>
+<pre><code>## clusters_rna
+##    1    2    3    4    5    6    7    8    9 
+## 1244 2703  388  876 2366  166  650  124   88</code></pre>
+<p>Also add it to the coldata.</p>
+<pre class="r"><code>cluster_tibble &lt;- tibble::tibble(barcode = rownames(pca_rna),
+                                 cluster = clusters_rna)
+
+consensus_coldata &lt;- consensus_coldata %&gt;%
+  left_join(cluster_tibble, by=&quot;barcode&quot;)</code></pre>
+<p>Check marker genes.</p>
+<pre class="r"><code>plot_violin &lt;- function(gene, expression, clusters, scale=&quot;width&quot;) {
+  idents &lt;- sort(unique(clusters))
+  df &lt;- as.data.frame(cbind(clusters, expression[gene,]))
+  colnames(df) &lt;- c(&quot;cluster&quot;, &quot;expr&quot;)
+  df &lt;- df %&gt;% mutate(cluster = factor(cluster, idents))
+  ggplot(df) +
+    geom_violin(aes(x=cluster, y=expr, fill=cluster), scale = {{scale}}) +
+    labs(x = &quot;Cluster&quot;, y = &quot;Transformed Expression&quot;, title = {{gene}}) +
+    theme(legend.position = &quot;none&quot;, 
+          plot.title = element_text(hjust = 0.5))
+}</code></pre>
+<pre class="r"><code>consensus_rna_log &lt;- consensus_rna_dbl %&gt;% log_norm()</code></pre>
+<pre class="r"><code>plot_violin(&quot;CD8A&quot;, consensus_rna_log, clusters_rna)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-78-1.png" width="672" /></p>
+<pre class="r"><code>plot_violin(&quot;CD8B&quot;, consensus_rna_log, clusters_rna)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-78-2.png" width="672" /></p>
+<pre class="r"><code>plot_violin(&quot;IL7R&quot;, consensus_rna_log, clusters_rna)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-78-3.png" width="672" /></p>
+<pre class="r"><code>plot_violin(&quot;CCR7&quot;, consensus_rna_log, clusters_rna)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-78-4.png" width="672" /></p>
+<pre class="r"><code>plot_violin(&quot;S100A4&quot;, consensus_rna_log, clusters_rna)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-78-5.png" width="672" /></p>
+<pre class="r"><code>plot_violin(&quot;CD14&quot;, consensus_rna_log, clusters_rna)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-78-6.png" width="672" /></p>
+<pre class="r"><code>plot_violin(&quot;LYZ&quot;, consensus_rna_log, clusters_rna)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-78-7.png" width="672" /></p>
+<pre class="r"><code>plot_violin(&quot;MS4A1&quot;, consensus_rna_log, clusters_rna)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-78-8.png" width="672" /></p>
+<pre class="r"><code>plot_violin(&quot;FCGR3A&quot;, consensus_rna_log, clusters_rna)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-78-9.png" width="672" /></p>
+<pre class="r"><code>plot_violin(&quot;MS4A7&quot;, consensus_rna_log, clusters_rna)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-78-10.png" width="672" /></p>
+<pre class="r"><code>plot_violin(&quot;GNLY&quot;, consensus_rna_log, clusters_rna)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-78-11.png" width="672" /></p>
+<pre class="r"><code>plot_violin(&quot;NKG7&quot;, consensus_rna_log, clusters_rna)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-78-12.png" width="672" /></p>
+<pre class="r"><code>plot_violin(&quot;FCER1A&quot;, consensus_rna_log, clusters_rna)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-78-13.png" width="672" /></p>
+<pre class="r"><code>plot_violin(&quot;CST3&quot;, consensus_rna_log, clusters_rna)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-78-14.png" width="672" /></p>
+<pre class="r"><code>plot_violin(&quot;PPBP&quot;, consensus_rna_log, clusters_rna)</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-78-15.png" width="672" /></p>
+<pre class="r"><code>translate_vector &lt;- c(
+  &quot;CD8+_T&quot; = 1,
+  &quot;Naive_CD4+_T&quot; = 2,
+  &quot;Memory_CD4+_T&quot;= 8,
+  &quot;CD14+_Mono&quot; = 5,
+  &quot;B&quot; = 7,
+  &quot;FCGR3A+_Mono&quot; = 3,
+  &quot;NK&quot; = 4,
+  &quot;DC&quot; = 6,
+  &quot;NA&quot; = 9
+)
+translate_vector &lt;- names(translate_vector) %&gt;%
+  set_names(translate_vector)
+length(translate_vector)</code></pre>
+<pre><code>## [1] 9</code></pre>
+<pre class="r"><code>annotations_rna &lt;- translate_vector[as.character(clusters_rna)]
+names(annotations_rna) &lt;- colnames(consensus_rna_dbl)
+
+table(annotations_rna)</code></pre>
+<pre><code>## annotations_rna
+##             B    CD14+_Mono        CD8+_T            DC  FCGR3A+_Mono 
+##           650          2366          1244           166           388 
+## Memory_CD4+_T            NA  Naive_CD4+_T            NK 
+##           124            88          2703           876</code></pre>
+<p>Adding to the coldata.</p>
+<pre class="r"><code>annotation_tibble &lt;- tibble::tibble(barcode = rownames(pca_rna),
+                                    annotation = annotations_rna)
+
+consensus_coldata &lt;- consensus_coldata %&gt;%
+  left_join(annotation_tibble, by=&quot;barcode&quot;)</code></pre>
+<p>Plot UMAP.</p>
+<pre class="r"><code>ggplot() +
+  geom_point(aes(x=umap_rna[,1],
+                 y=umap_rna[,2],
+                 color=consensus_coldata$annotation),
+             size=0.1, alpha=0.5) +
+  labs(x = &quot;UMAP 1&quot;, y = &quot;UMAP 2&quot;, color = &quot;Sample&quot;) +
+  guides(colour = guide_legend(override.aes = list(size = 2)))</code></pre>
+<p><img src="10x_pbmc_multiome_processing_files/figure-html/unnamed-chunk-81-1.png" width="768" /></p>
+</div>
 <div id="saving" class="section level1">
 <h1>Saving</h1>
-<pre class="r"><code>saveRDS(rna_raw, 
-        paste0(output_dir, timestamp, &quot;_tel_rna_raw.RDS&quot;))
-saveRDS(consensus_rna, 
-        paste0(output_dir, timestamp, &quot;_rna_consensus.RDS&quot;))
-saveRDS(consensus_rna_dbl, 
+<pre class="r"><code>saveRDS(consensus_rna_dbl, 
         paste0(output_dir, timestamp, &quot;_rna_consensus_dbl.RDS&quot;))
 
-saveArchRProject(ArchRProj = proj, 
-                 outputDirectory = paste0(output_dir, &quot;ConsensusQC_ArchR_PROJ&quot;), 
-                 load = FALSE)
-saveArchRProject(ArchRProj = consensus_proj, 
-                 outputDirectory = paste0(output_dir, &quot;Consensus_ArchR_PROJ&quot;), 
-                 load = FALSE)
 saveArchRProject(ArchRProj = consensus_proj_dbl, 
                  outputDirectory = paste0(output_dir, &quot;Consensus_dbl_ArchR_PROJ&quot;), 
                  load = FALSE)
 
-saveRDS(coldata, 
+saveRDS(consensus_coldata, 
         paste0(output_dir, timestamp, &quot;_coldata_after_QC.RDS&quot;))
 
-save.image(file = &quot;Latest_Consensus_QC.RData&quot;)</code></pre>
+save.image(file = paste0(output_dir, &quot;Latest_Consensus_QC.RData&quot;))</code></pre>
 </div>
 <div id="references" class="section level1 unnumbered">
 <h1 class="unnumbered">References</h1>

@@ -1,6 +1,11 @@
 .Rproj.user
 .Rhistory
-.RData
+*.RData
 .Ruserdata
 Bioinfo_Playground.Rproj
 10x_pbmc_gex_processing_output/
+cov19_balf_gex_qc_output
+*RData
+*.arrow
+10x_pbmc_multiome_processing_output
+ArchRLogs
